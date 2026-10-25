@@ -20,9 +20,6 @@
     --primary-2: #8b5cf6;
     --danger: #ef4444;
     --success: #10b981;
-    --radius: 16px;
-    --radius-sm: 12px;
-    --radius-xs: 8px;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; padding: 0; height: 100%; }
@@ -58,12 +55,10 @@
     }
   }
 
-  /* ---------- SCREENS ---------- */
   .screen { display: none; height: 100%; flex-direction: column; overflow: hidden; }
   .screen.active { display: flex; animation: fadeIn 0.25s ease; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 
-  /* ---------- AUTH ---------- */
   #s-auth, #s-unlock {
     padding: 32px 24px;
     justify-content: center;
@@ -83,10 +78,7 @@
     padding: 28px 24px;
     box-shadow: 0 12px 40px rgba(0,0,0,0.4);
   }
-  .brand {
-    display: flex; flex-direction: column; align-items: center;
-    margin-bottom: 24px;
-  }
+  .brand { display: flex; flex-direction: column; align-items: center; margin-bottom: 24px; }
   .brand-icon {
     width: 56px; height: 56px; border-radius: 16px;
     background: linear-gradient(135deg, var(--primary), var(--primary-2));
@@ -108,7 +100,7 @@
     width: 100%; padding: 13px 14px;
     background: var(--surface-2);
     border: 1px solid var(--border-2);
-    border-radius: var(--radius-sm);
+    border-radius: 12px;
     color: var(--text); outline: none;
     transition: border-color 0.15s, box-shadow 0.15s;
   }
@@ -120,7 +112,7 @@
 
   .btn {
     width: 100%; padding: 13px;
-    border-radius: var(--radius-sm);
+    border-radius: 12px;
     font-weight: 600; font-size: 15px;
     display: flex; align-items: center; justify-content: center; gap: 8px;
     transition: transform 0.1s, opacity 0.15s;
@@ -131,29 +123,19 @@
     color: white;
     box-shadow: 0 4px 16px rgba(59,130,246,0.3);
   }
-  .btn-ghost {
-    background: transparent;
-    color: var(--muted);
-    font-weight: 500;
-  }
+  .btn-ghost { background: transparent; color: var(--muted); font-weight: 500; }
   .btn-ghost:hover { color: var(--text); }
   .btn-row { display: flex; gap: 10px; margin-top: 10px; }
 
-  .err {
-    color: var(--danger);
-    font-size: 13px;
-    min-height: 18px;
-    margin: 8px 0 0;
-  }
+  .err { color: var(--danger); font-size: 13px; min-height: 18px; margin: 8px 0 0; }
   .hint {
     font-size: 12px; color: var(--muted-2);
     margin-top: 16px; line-height: 1.5;
     padding: 12px; background: var(--surface-2);
-    border-radius: var(--radius-sm);
+    border-radius: 12px;
     border-left: 3px solid var(--primary);
   }
 
-  /* ---------- CHAT LAYOUT ---------- */
   #s-chat { background: var(--bg); }
   .view { display: none; height: 100%; flex-direction: column; overflow: hidden; }
   .view.active { display: flex; }
@@ -166,24 +148,15 @@
     flex-shrink: 0;
   }
   .topbar-title {
-    flex: 1;
-    font-weight: 600;
-    font-size: 16px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    flex: 1; font-weight: 600; font-size: 16px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
   .topbar-sub {
-    display: block; font-size: 12px;
-    color: var(--muted); font-weight: 400;
-    margin-top: 1px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    display: block; font-size: 12px; color: var(--muted); font-weight: 400;
+    margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
   .icon-btn {
-    width: 38px; height: 38px;
-    border-radius: 10px;
+    width: 38px; height: 38px; border-radius: 10px;
     display: grid; place-items: center;
     color: var(--muted);
     transition: background 0.15s, color 0.15s;
@@ -191,17 +164,11 @@
   .icon-btn:hover { background: var(--surface-2); color: var(--text); }
   .icon-btn svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; }
 
-  /* ---------- USER LIST ---------- */
-  .user-list {
-    flex: 1; overflow-y: auto;
-    padding: 8px;
-  }
+  .user-list { flex: 1; overflow-y: auto; padding: 8px; }
   .user-item {
     display: flex; align-items: center; gap: 14px;
-    padding: 12px;
-    border-radius: var(--radius-sm);
-    width: 100%;
-    text-align: left;
+    padding: 12px; border-radius: 12px;
+    width: 100%; text-align: left;
     transition: background 0.15s;
   }
   .user-item:hover { background: var(--surface); }
@@ -214,114 +181,71 @@
   .user-hint { font-size: 12px; color: var(--muted); margin-top: 2px; }
 
   .avatar {
-    width: 46px; height: 46px;
-    border-radius: 50%;
+    width: 46px; height: 46px; border-radius: 50%;
     display: grid; place-items: center;
     font-weight: 700; font-size: 17px;
-    color: white;
-    flex-shrink: 0;
-    position: relative;
+    color: white; flex-shrink: 0;
   }
   .avatar.sm { width: 34px; height: 34px; font-size: 14px; }
-  .avatar.lg { width: 54px; height: 54px; font-size: 20px; }
 
   .empty {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 40px 24px;
-    text-align: center;
-    color: var(--muted);
-    gap: 12px;
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 40px 24px; text-align: center;
+    color: var(--muted); gap: 12px;
   }
   .empty svg { width: 56px; height: 56px; stroke: var(--muted-2); fill: none; stroke-width: 1.5; opacity: 0.7; }
   .empty p { margin: 0; font-size: 14px; max-width: 260px; }
 
-  /* ---------- CONVERSATION ---------- */
   .messages {
-    flex: 1;
-    overflow-y: auto;
+    flex: 1; overflow-y: auto;
     padding: 16px 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+    display: flex; flex-direction: column; gap: 4px;
     scroll-behavior: smooth;
   }
   .messages::-webkit-scrollbar { width: 6px; }
   .messages::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 3px; }
 
-  .msg-group { display: flex; flex-direction: column; margin: 8px 0 2px; }
-  .msg {
-    display: flex; flex-direction: column;
-    max-width: 78%;
-    animation: msgIn 0.18s ease;
-  }
-  @keyframes msgIn {
-    from { opacity: 0; transform: translateY(6px); }
-    to { opacity: 1; transform: none; }
-  }
+  .msg { display: flex; flex-direction: column; max-width: 78%; margin: 4px 0; animation: msgIn 0.18s ease; }
+  @keyframes msgIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
   .msg.me { align-self: flex-end; align-items: flex-end; }
   .msg.them { align-self: flex-start; align-items: flex-start; }
   .bubble {
-    padding: 10px 14px;
-    border-radius: 18px;
-    word-wrap: break-word;
-    white-space: pre-wrap;
-    font-size: 15px;
-    line-height: 1.4;
+    padding: 10px 14px; border-radius: 18px;
+    word-wrap: break-word; white-space: pre-wrap;
+    font-size: 15px; line-height: 1.4;
   }
-  .msg.them .bubble {
-    background: var(--surface-2);
-    color: var(--text);
-    border-bottom-left-radius: 6px;
-  }
+  .msg.them .bubble { background: var(--surface-2); color: var(--text); border-bottom-left-radius: 6px; }
   .msg.me .bubble {
     background: linear-gradient(135deg, var(--primary), var(--primary-2));
-    color: white;
-    border-bottom-right-radius: 6px;
+    color: white; border-bottom-right-radius: 6px;
   }
-  .msg-time {
-    font-size: 11px;
-    color: var(--muted-2);
-    margin: 4px 8px 0;
-  }
-  .msg.undecryptable .bubble {
-    background: rgba(239,68,68,0.12);
-    color: var(--danger);
-    font-style: italic;
-  }
+  .msg-time { font-size: 11px; color: var(--muted-2); margin: 4px 8px 0; }
+  .msg.undecryptable .bubble { background: rgba(239,68,68,0.12); color: var(--danger); font-style: italic; }
 
   .composer {
-    display: flex;
-    gap: 8px;
+    display: flex; gap: 8px;
     padding: 12px 14px;
     padding-bottom: calc(12px + env(safe-area-inset-bottom));
     background: var(--surface);
     border-top: 1px solid var(--border);
-    align-items: flex-end;
-    flex-shrink: 0;
+    align-items: flex-end; flex-shrink: 0;
   }
   .composer input {
-    flex: 1;
-    padding: 12px 16px;
+    flex: 1; padding: 12px 16px;
     background: var(--surface-2);
     border: 1px solid var(--border-2);
     border-radius: 22px;
-    color: var(--text);
-    outline: none;
+    color: var(--text); outline: none;
     transition: border-color 0.15s;
     min-width: 0;
   }
   .composer input:focus { border-color: var(--primary); }
   .composer input:disabled { opacity: 0.5; }
   .send-btn {
-    width: 44px; height: 44px;
-    border-radius: 50%;
+    width: 44px; height: 44px; border-radius: 50%;
     background: linear-gradient(135deg, var(--primary), var(--primary-2));
-    display: grid; place-items: center;
-    flex-shrink: 0;
+    display: grid; place-items: center; flex-shrink: 0;
     box-shadow: 0 4px 12px rgba(59,130,246,0.35);
     transition: transform 0.1s, opacity 0.15s;
   }
@@ -329,15 +253,11 @@
   .send-btn:disabled { opacity: 0.4; box-shadow: none; }
   .send-btn svg { width: 20px; height: 20px; stroke: white; fill: none; stroke-width: 2.5; }
 
-  /* ---------- SAFETY MODAL ---------- */
   .modal {
-    position: absolute;
-    inset: 0;
+    position: absolute; inset: 0;
     background: rgba(0,0,0,0.6);
     backdrop-filter: blur(4px);
-    display: none;
-    align-items: flex-end;
-    z-index: 100;
+    display: none; align-items: flex-end; z-index: 100;
   }
   .modal.active { display: flex; animation: fadeIn 0.15s ease; }
   @media (min-width: 640px) { .modal { align-items: center; justify-content: center; } }
@@ -347,60 +267,35 @@
     border-top-left-radius: 24px;
     border-top-right-radius: 24px;
     padding: 24px 20px calc(24px + env(safe-area-inset-bottom));
-    max-height: 85%;
-    overflow-y: auto;
+    max-height: 85%; overflow-y: auto;
   }
   @media (min-width: 640px) {
-    .sheet {
-      max-width: 420px;
-      border-radius: 24px;
-      border: 1px solid var(--border);
-    }
+    .sheet { max-width: 420px; border-radius: 24px; border: 1px solid var(--border); }
   }
   .sheet-title {
-    font-size: 18px; font-weight: 700;
-    margin: 0 0 6px;
+    font-size: 18px; font-weight: 700; margin: 0 0 6px;
     display: flex; align-items: center; gap: 8px;
   }
   .sheet-sub { font-size: 13px; color: var(--muted); margin: 0 0 20px; }
   .safety-num {
     background: var(--surface-2);
     border: 1px solid var(--border-2);
-    border-radius: var(--radius-sm);
+    border-radius: 12px;
     padding: 16px;
     font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    font-size: 13px;
-    letter-spacing: 0.5px;
-    word-break: break-all;
-    line-height: 1.8;
-    color: var(--text);
-    margin-bottom: 16px;
+    font-size: 13px; letter-spacing: 0.5px;
+    word-break: break-all; line-height: 1.8;
+    color: var(--text); margin-bottom: 16px;
     text-align: center;
   }
-  .verified-badge {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 4px 10px;
-    border-radius: 999px;
-    font-size: 11px;
-    font-weight: 600;
-    background: rgba(16,185,129,0.15);
-    color: var(--success);
-  }
-  .verified-badge svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 3; }
 
-  /* ---------- TOAST ---------- */
   .toast {
-    position: absolute;
-    bottom: 90px; left: 50%;
+    position: absolute; bottom: 90px; left: 50%;
     transform: translateX(-50%) translateY(20px);
-    background: var(--surface-3);
-    color: var(--text);
-    padding: 12px 18px;
-    border-radius: 12px;
-    font-size: 13px;
-    max-width: 90%;
-    opacity: 0;
-    pointer-events: none;
+    background: var(--surface-3); color: var(--text);
+    padding: 12px 18px; border-radius: 12px;
+    font-size: 13px; max-width: 90%;
+    opacity: 0; pointer-events: none;
     transition: opacity 0.2s, transform 0.2s;
     z-index: 200;
     box-shadow: 0 8px 24px rgba(0,0,0,0.5);
@@ -415,7 +310,6 @@
 
 <div class="app">
 
-  <!-- ========== AUTH ========== -->
   <section id="s-auth" class="screen active">
     <div class="auth-card">
       <div class="brand">
@@ -448,7 +342,6 @@
     </div>
   </section>
 
-  <!-- ========== UNLOCK ========== -->
   <section id="s-unlock" class="screen">
     <div class="auth-card">
       <div class="brand">
@@ -476,10 +369,8 @@
     </div>
   </section>
 
-  <!-- ========== CHAT ========== -->
   <section id="s-chat" class="screen">
 
-    <!-- View: user list -->
     <div id="v-list" class="view active">
       <div class="topbar">
         <div class="avatar sm" id="myAvatar">?</div>
@@ -498,7 +389,6 @@
       </div>
     </div>
 
-    <!-- View: conversation -->
     <div id="v-conv" class="view">
       <div class="topbar">
         <button class="icon-btn" id="btnBack" title="Back">
@@ -522,7 +412,6 @@
       </div>
     </div>
 
-    <!-- Safety modal -->
     <div id="safetyModal" class="modal">
       <div class="sheet">
         <h2 class="sheet-title">
@@ -539,7 +428,6 @@
       </div>
     </div>
 
-    <!-- Toast -->
     <div id="toast" class="toast"></div>
 
   </section>
@@ -555,15 +443,19 @@ import { getFirestore, doc, setDoc, getDoc, collection, addDoc, query,
 
 /* ---------- FIREBASE CONFIG ---------- */
 const firebaseConfig = {
-  apiKey: "PASTE", authDomain: "PASTE", projectId: "PASTE",
-  storageBucket: "PASTE", messagingSenderId: "PASTE", appId: "PASTE"
+  apiKey: "AIzaSyCe6Q8aExpgyabRv29v9_j8Pho2eGQyl4Q",
+  authDomain: "chetter-box.firebaseapp.com",
+  projectId: "chetter-box",
+  storageBucket: "chetter-box.firebasestorage.app",
+  messagingSenderId: "37934644509",
+  appId: "1:37934644509:web:9c25c3589cf77c009d35f4"
 };
 
 const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-/* ---------- CRYPTO (unchanged) ---------- */
+/* ---------- CRYPTO ---------- */
 const te = new TextEncoder();
 const td = new TextDecoder();
 const b64   = b => btoa(String.fromCharCode(...new Uint8Array(b)));
@@ -665,15 +557,11 @@ function hueFromString(s) {
   for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 360;
   return h;
 }
-function avatarInfo(uid, email) {
+function paintAvatar(el, uid, email) {
   const letter = (email || uid || "?").trim()[0].toUpperCase();
   const hue = hueFromString(uid || email || "x");
-  return { letter, color: `hsl(${hue}, 65%, 45%)` };
-}
-function paintAvatar(el, uid, email) {
-  const { letter, color } = avatarInfo(uid, email);
   el.textContent = letter;
-  el.style.background = `linear-gradient(135deg, ${color}, hsl(${hueFromString(uid)} , 55%, 35%))`;
+  el.style.background = `linear-gradient(135deg, hsl(${hue},65%,45%), hsl(${hue},55%,35%))`;
 }
 
 function toast(msg, isError = false) {
@@ -696,16 +584,16 @@ function formatTime(ts) {
 }
 
 /* ---------- STATE ---------- */
-let me = null;           // { uid, email, pubKey }
-let myKey = null;        // CryptoKey, in memory only
-let peerKey = null;      // CryptoKey, shared with current peer
-let currentPeer = null;  // { uid, email, pubKey }
+let me = null;
+let myKey = null;
+let peerKey = null;
+let currentPeer = null;
 let unsubMsgs = null;
 let sending = false;
 
 const VERIFIED_KEY = "vaultchat_verified_";
 
-/* ---------- AUTH FLOW ---------- */
+/* ---------- AUTH ---------- */
 $("btnSignup").onclick = async () => {
   const email = $("email").value.trim(), pw = $("password").value;
   $("authErr").textContent = "";
@@ -756,7 +644,7 @@ onAuthStateChanged(auth, async user => {
   }
 });
 
-/* ---------- CHAT LIST ---------- */
+/* ---------- USER LIST ---------- */
 async function enterChat() {
   show("s-chat");
   setView("list");
