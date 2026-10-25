@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Secure Chat</title>
+<style>
+  body { font-family: system-ui; max-width: 700px; margin: 0 auto; padding: 12px; }
+  .screen { display: none; }
+  .screen.active { display: block; }
+  #messages { height: 55vh; overflow-y: auto; border: 1px solid #ddd;
+              border-radius: 8px; padding: 8px; margin: 8px 0; }
+  .msg { margin: 6px 0; } .me { text-align: right; }
+  .who { font-size: 11px; color: #888; }
+  .bubble { display: inline-block; background: #eee; padding: 6px 10px;
+            border-radius: 12px; max-width: 80%; }
+  .me .bubble { background: #2563eb; color: white; }
+  input, button { padding: 10px; font-size: 15px; margin: 2px; }
+  #msgInput { width: 72%; }
+  .fingerprint { font-family: monospace; font-size: 11px; color: #555;
+                 word-break: break-all; background: #f5f5f5; padding: 6px; border-radius: 6px; }
+  #userList button { display: block; width: 100%; text-align: left; margin: 4px 0; }
+  .err { color: #dc2626; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<!-- SIGN UP / LOGIN -->
+<div id="s-auth" class="screen active">
+  <h3>Sign in</h3>
+  <input id="email" placeholder="email" /><br />
+  <input id="password" type="password" placeholder="password (min 8)" /><br />
+  <button id="btnLogin">Login</button>
+  <button id="btnSignup">Create account</button>
+  <p class="err" id="authErr"></p>
+  <p style="font-size:12px;color:#666">Your private key is encrypted with your password.
+  We cannot recover it. Forget your password = lose your messages.</p>
+</div>
+
+<!-- UNLOCK (on reload) -->
+<div id="s-unlock" class="screen">
+  <h3>Unlock</h3>
+  <p style="font-size:13px;color:#666">Signed in as <span id="unlockEmail"></span>.
+  Re-enter your password to decrypt your key in this tab.</p>
+  <input id="unlockPw" type="password" placeholder="password" /><br />
+  <button id="btnUnlock">Unlock</button>
+  <button id="btnLogout1">Logout</button>
+  <p class="err" id="unlockErr"></p>
+</div>
+
+<!-- CHAT -->
+<div id="s-chat" class="screen">
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <h3 id="chatTitle">Select a conversation</h3>
+    <button id="btnLogout2">Logout</button>
+  </div>
+  <div id="userList"></div>
+  <div class="fingerprint" id="safetyNum" style="display:none"></div>
+  <div id="messages"></div>
+  <input id="msgInput" placeholder="Type a message..." disabled />
+  <button id="btnSend" disabled>Send</button>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+         onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, collection, addDoc, query,
+         orderBy, limit, onSnapshot, serverTimestamp, getDocs }
+         from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+/* ---------- FIREBASE CONFIG ---------- */
+const firebaseConfig = {
+  apiKey: "PASTE", authDomain: "PASTE", projectId: "PASTE",
+  storageBucket: "PASTE", messagingSenderId: "PASTE", appId: "PASTE"
+};
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+/* ---------- CRYPTO HELPERS ---------- */
+const te = new TextEncoder();
+const td = new TextDecoder();
+const b64   = b => btoa(String.fromCharCode(...new Uint8Array(b)));
+const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const rand  = n => crypto.getRandomValues(new Uint8Array(n));
+
+async function deriveKek(password, saltBytes, iterations) {
+  const base = await crypto.subtle.importKey("raw", te.encode(password),
+    "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey(
+    { name: "PBKDF2", salt: saltBytes, iterations, hash: "SHA-256" },
+    base, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
+}
+
+// Generate identity keypair, wrap private key with password, store pubkey + wrapped key
+async function createIdentity(uid, password) {
+  const kp = await crypto.subtle.generateKey(
+    { name: "ECDH", namedCurve: "P-256" }, true, ["deriveBits"]);
+  const pubRaw    = await crypto.subtle.exportKey("raw", kp.publicKey);
+  const privPkcs8 = await crypto.subtle.exportKey("pkcs8", kp.privateKey);
+  const salt = rand(16), iv = rand(12), ITER = 600000;
+  const kek = await deriveKek(password, salt, ITER);
+  const wrapped = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, kek, privPkcs8);
+
+  await setDoc(doc(db, "users", uid), {
+    pubKey: b64(pubRaw),
+    encPrivKey: b64(wrapped),
+    privIv: b64(iv),
+    kdfSalt: b64(salt),
+    kdfIter: ITER
+  }, { merge: true });
+
+  return { privateKey: kp.privateKey, publicKeyB64: b64(pubRaw) };
+}
+
+// Decrypt wrapped private key into memory (non-extractable)
+async function unlockIdentity(uid, password) {
+  const snap = await getDoc(doc(db, "users", uid));
+  if (!snap.exists()) throw new Error("No key material for this account.");
+  const d = snap.data();
+  const kek = await deriveKek(password, unb64(d.kdfSalt), d.kdfIter);
+  let privPkcs8;
+  try {
+    privPkcs8 = await crypto.subtle.decrypt(
+      { name: "AES-GCM", iv: unb64(d.privIv) }, kek, unb64(d.encPrivKey));
+  } catch {
+    throw new Error("Wrong password.");
+  }
+  const privateKey = await crypto.subtle.importKey(
+    "pkcs8", privPkcs8, { name: "ECDH", namedCurve: "P-256" }, false, ["deriveBits"]);
+  return { privateKey, publicKeyB64: d.pubKey };
+}
+
+// ECDH(my private, their public) -> HKDF -> AES-GCM key
+async function sharedKey(myPriv, theirPubB64, uidA, uidB) {
+  const theirPub = await crypto.subtle.importKey("raw", unb64(theirPubB64),
+    { name: "ECDH", namedCurve: "P-256" }, false, []);
+  const bits = await crypto.subtle.deriveBits(
+    { name: "ECDH", public: theirPub }, myPriv, 256);
+  const ikm = await crypto.subtle.importKey("raw", bits, "HKDF", false, ["deriveKey"]);
+  const info = te.encode([uidA, uidB].sort().join("|") + "|chat-v1");
+  return crypto.subtle.deriveKey(
+    { name: "HKDF", hash: "SHA-256", salt: te.encode("chat-v1"), info },
+    ikm, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
+}
+
+async function encryptMsg(key, text) {
+  const iv = rand(12);
+  const ct = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, te.encode(text));
+  return { iv: b64(iv), ct: b64(ct) };
+}
+
+async function decryptMsg(key, ivB64, ctB64) {
+  const pt = await crypto.subtle.decrypt(
+    { name: "AES-GCM", iv: unb64(ivB64) }, key, unb64(ctB64));
+  return td.decode(pt);
+}
+
+// Safety number: SHA-256 of both public keys, sorted
+async function safetyNumber(pubA, pubB) {
+  const parts = [pubA, pubB].sort();
+  const digest = await crypto.subtle.digest("SHA-256", te.encode(parts.join("|")));
+  return [...new Uint8Array(digest)]
+    .map(b => b.toString(16).padStart(2, "0")).join("")
+    .match(/.{1,4}/g).join(" ");
+}
+
+const pairId = (a, b) => [a, b].sort().join("_");
+
+/* ---------- UI / STATE ---------- */
+const $ = id => document.getElementById(id);
+const show = id => document.querySelectorAll(".screen")
+  .forEach(s => s.classList.toggle("active", s.id === id));
+
+let me = null;          // { uid, email }
+let myKey = null;       // CryptoKey (private, in memory only)
+let peerKey = null;     // CryptoKey (shared with current peer)
+let currentPeer = null; // { uid, email, pubKeyB64 }
+let unsubMsgs = null;
+
+/* ---------- AUTH FLOW ---------- */
+$("btnSignup").onclick = async () => {
+  const email = $("email").value.trim(), pw = $("password").value;
+  $("authErr").textContent = "";
+  if (pw.length < 8) return $("authErr").textContent = "Password must be 8+ chars.";
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, pw);
+    const id = await createIdentity(cred.user.uid, pw);
+    myKey = id.privateKey;
+    enterChat();
+  } catch (e) { $("authErr").textContent = e.message; }
+};
+
+$("btnLogin").onclick = async () => {
+  $("authErr").textContent = "";
+  try {
+    await signInWithEmailAndPassword(auth, $("email").value.trim(), $("password").value);
+  } catch (e) { $("authErr").textContent = e.message; }
+};
+
+$("btnLogout1").onclick = $("btnLogout2").onclick = () => signOut(auth);
+
+$("btnUnlock").onclick = async () => {
+  $("unlockErr").textContent = "";
+  try {
+    const id = await unlockIdentity(me.uid, $("unlockPw").value);
+    myKey = id.privateKey;
+    $("unlockPw").value = "";
+    enterChat();
+  } catch (e) { $("unlockErr").textContent = e.message; }
+};
+
+onAuthStateChanged(auth, async user => {
+  if (!user) { me = null; myKey = null; show("s-auth"); return; }
+  me = { uid: user.uid, email: user.email };
+  // Key only lives in memory. Reload => must re-enter password.
+  if (myKey) enterChat();
+  else { $("unlockEmail").textContent = user.email; show("s-unlock"); }
+});
+
+/* ---------- CHAT ---------- */
+async function enterChat() {
+  show("s-chat");
+  await loadUsers();
+}
+
+async function loadUsers() {
+  const snap = await getDocs(collection(db, "users"));
+  const box = $("userList"); box.innerHTML = "";
+  snap.forEach(d => {
+    if (d.id === me.uid) return;
+    const u = d.data();
+    const btn = document.createElement("button");
+    btn.textContent = u.email || d.id;
+    btn.onclick = () => openConversation(d.id, u);
+    box.appendChild(btn);
+  });
+}
+
+async function openConversation(peerUid, peerData) {
+  currentPeer = { uid: peerUid, email: peerData.email, pubKeyB64: peerData.pubKey };
+  $("chatTitle").textContent = peerData.email;
+  $("msgInput").disabled = $("btnSend").disabled = false;
+
+  $("safetyNum").style.display = "block";
+  const myPub = (await getDoc(doc(db, "users", me.uid))).data().pubKey;
+  $("safetyNum").textContent =
+    "Safety number (compare in person): " + await safetyNumber(myPub, peerData.pubKey);
+
+  peerKey = await sharedKey(myKey, peerData.pubKey, me.uid, peerUid);
+  listenMessages();
+}
+
+function listenMessages() {
+  if (unsubMsgs) unsubMsgs();
+  const pid = pairId(me.uid, currentPeer.uid);
+  const q = query(collection(db, "dms", pid, "messages"),
+                  orderBy("createdAt", "asc"), limit(300));
+  unsubMsgs = onSnapshot(q, async snap => {
+    const box = $("messages"); box.innerHTML = "";
+    for (const d of snap.docs) {
+      const m = d.data();
+      let text;
+      try { text = await decryptMsg(peerKey, m.iv, m.ct); }
+      catch { text = "[cannot decrypt]"; }
+      const mine = m.from === me.uid;
+      const el = document.createElement("div");
+      el.className = "msg" + (mine ? " me" : "");
+      const who = document.createElement("div");
+      who.className = "who";
+      who.textContent = mine ? "you" : currentPeer.email;
+      const bub = document.createElement("div");
+      bub.className = "bubble";
+      bub.textContent = text;              // textContent => no XSS
+      el.append(who, bub);
+      box.appendChild(el);
+    }
+    box.scrollTop = box.scrollHeight;
+  });
+}
+
+$("btnSend").onclick = send;
+$("msgInput").addEventListener("keydown", e => { if (e.key === "Enter") send(); });
+
+async function send() {
+  const text = $("msgInput").value.trim();
+  if (!text || !peerKey) return;
+  $("msgInput").value = "";
+  const { iv, ct } = await encryptMsg(peerKey, text);
+  await addDoc(collection(db, "dms", pairId(me.uid, currentPeer.uid), "messages"), {
+    from: me.uid, to: currentPeer.uid, iv, ct, createdAt: serverTimestamp()
+  });
+}
+</script>
+</body>
+</html>
