@@ -16,7 +16,6 @@
   --e2:0 8px 24px rgba(0,0,0,.25);
   --e3:0 16px 40px rgba(0,0,0,.35);
   --e4:0 32px 80px rgba(0,0,0,.5);
-  --g:0 0 40px rgba(14,165,233,.25);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
@@ -27,7 +26,6 @@ a{color:inherit;text-decoration:none;}
 button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit;font-size:inherit;}
 img{max-width:100%;display:block;}
 
-/* ANIMATED BACKGROUND */
 .bg-orb{position:fixed;border-radius:50%;filter:blur(100px);
   -webkit-filter:blur(100px);pointer-events:none;z-index:0;opacity:.5;}
 .bg-orb.a{width:500px;height:500px;background:var(--p);top:-180px;left:-180px;
@@ -43,14 +41,12 @@ img{max-width:100%;display:block;}
 @keyframes orbC{0%,100%{transform:translate(0,0) scale(1);}
   50%{transform:translate(60px,-40px) scale(.85);}}
 
-/* CONTAINER */
 .container{max-width:1180px;margin:0 auto;padding:0 24px;position:relative;z-index:1;}
 
-/* NAVBAR */
 nav{position:fixed;top:0;left:0;right:0;z-index:100;
   background:rgba(6,9,15,.72);backdrop-filter:blur(20px) saturate(140%);
   -webkit-backdrop-filter:blur(20px) saturate(140%);
-  border-bottom:1px solid var(--bd);}
+  border-bottom:1px solid var(--bd);transition:box-shadow .3s;}
 .nav-inner{max-width:1180px;margin:0 auto;padding:14px 24px;
   display:flex;align-items:center;gap:20px;}
 .nav-logo{display:flex;align-items:center;gap:10px;font-weight:900;
@@ -77,7 +73,6 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;
   .nav-cta{font-size:12px;padding:7px 14px;}
 }
 
-/* HERO */
 .hero{padding:140px 0 80px;text-align:center;position:relative;}
 .hero-badge{display:inline-flex;align-items:center;gap:8px;
   padding:6px 14px;background:var(--s2);border:1px solid var(--bd2);
@@ -122,7 +117,6 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;
 .hero-meta svg{width:14px;height:14px;stroke:var(--p);fill:none;
   stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
 
-/* PHONE MOCKUP */
 .hero-phone{margin:60px auto 0;width:280px;height:560px;position:relative;
   animation:fadeUp 1s ease backwards .5s,float 6s ease-in-out infinite .5s;}
 @keyframes float{0%,100%{transform:translateY(0);}
@@ -143,8 +137,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;
 .mock-msg{padding:10px 14px;border-radius:14px;font-size:12px;
   line-height:1.4;max-width:82%;animation:msgIn .6s ease backwards;}
 .mock-msg.them{background:var(--s2);border:1px solid var(--bd);
-  align-self:flex-start;border-bottom-left-radius:4px;
-  animation-delay:1s;}
+  align-self:flex-start;border-bottom-left-radius:4px;animation-delay:1s;}
 .mock-msg.me{background:var(--p);color:#fff;align-self:flex-end;
   border-bottom-right-radius:4px;box-shadow:0 4px 16px rgba(14,165,233,.3);
   animation-delay:1.3s;}
@@ -175,7 +168,6 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;
 @keyframes fadeUp{from{opacity:0;transform:translateY(30px);}
   to{opacity:1;transform:translateY(0);}}
 
-/* SECTION */
 section{padding:100px 0;position:relative;}
 .section-head{text-align:center;max-width:680px;margin:0 auto 60px;}
 .section-head h2{font-size:clamp(28px,4.5vw,44px);font-weight:900;
@@ -186,7 +178,6 @@ section{padding:100px 0;position:relative;}
   letter-spacing:1.5px;text-transform:uppercase;color:var(--p);
   margin-bottom:16px;}
 
-/* FEATURES */
 .features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
   gap:20px;}
 .feature{background:var(--glass);border:1px solid var(--bd);
@@ -220,7 +211,6 @@ section{padding:100px 0;position:relative;}
   letter-spacing:-.3px;}
 .feature p{font-size:14px;color:var(--mt);line-height:1.6;}
 
-/* SECURITY */
 .security{background:var(--bg2);border-top:1px solid var(--bd);
   border-bottom:1px solid var(--bd);}
 .security-inner{display:grid;grid-template-columns:1fr 1fr;gap:60px;
@@ -265,7 +255,6 @@ section{padding:100px 0;position:relative;}
 .shield-icon svg{width:60px;height:60px;stroke:#fff;fill:none;stroke-width:1.8;
   stroke-linecap:round;stroke-linejoin:round;}
 
-/* HOW IT WORKS */
 .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
   gap:32px;position:relative;}
 .step{text-align:center;animation:fadeUp .6s ease backwards;}
@@ -280,7 +269,6 @@ section{padding:100px 0;position:relative;}
 .step h4{font-size:17px;font-weight:800;margin-bottom:8px;}
 .step p{font-size:14px;color:var(--mt);}
 
-/* DOWNLOAD */
 .download{background:linear-gradient(135deg,
   rgba(14,165,233,.06),rgba(236,72,153,.04));border-top:1px solid var(--bd);
   border-bottom:1px solid var(--bd);text-align:center;position:relative;
@@ -312,7 +300,6 @@ section{padding:100px 0;position:relative;}
 .download-info svg{width:14px;height:14px;stroke:var(--p);fill:none;
   stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
 
-/* FAQ */
 .faq{max-width:760px;margin:0 auto;}
 .faq-item{background:var(--s);border:1px solid var(--bd);
   border-radius:12px;margin-bottom:12px;overflow:hidden;
@@ -342,7 +329,6 @@ section{padding:100px 0;position:relative;}
   padding:0 24px;color:var(--mt);font-size:14px;line-height:1.65;}
 .faq-item.open .faq-a{max-height:400px;padding:0 24px 20px;}
 
-/* FOOTER */
 footer{border-top:1px solid var(--bd);padding:40px 0 32px;
   background:var(--bg);}
 .footer-inner{max-width:1180px;margin:0 auto;padding:0 24px;
@@ -358,7 +344,6 @@ footer{border-top:1px solid var(--bd);padding:40px 0 32px;
 .footer-note{margin-top:16px;text-align:center;font-size:12px;
   color:var(--mt2);width:100%;padding-top:20px;border-top:1px solid var(--bd);}
 
-/* TOAST */
 .toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(100px);
   background:var(--s3);color:var(--tx);padding:14px 24px;border-radius:12px;
   box-shadow:var(--e3);border:1px solid var(--bd2);font-size:14px;
@@ -403,7 +388,6 @@ footer{border-top:1px solid var(--bd);padding:40px 0 32px;
   </div>
 </nav>
 
-<!-- HERO -->
 <header class="hero">
   <div class="container">
     <div class="hero-badge">
@@ -457,7 +441,6 @@ footer{border-top:1px solid var(--bd);padding:40px 0 32px;
   </div>
 </header>
 
-<!-- FEATURES -->
 <section id="features">
   <div class="container">
     <div class="section-head">
@@ -534,7 +517,6 @@ footer{border-top:1px solid var(--bd);padding:40px 0 32px;
   </div>
 </section>
 
-<!-- SECURITY -->
 <section id="security" class="security">
   <div class="container">
     <div class="section-head">
@@ -588,7 +570,6 @@ footer{border-top:1px solid var(--bd);padding:40px 0 32px;
   </div>
 </section>
 
-<!-- HOW IT WORKS -->
 <section id="how">
   <div class="container">
     <div class="section-head">
@@ -616,16 +597,15 @@ footer{border-top:1px solid var(--bd);padding:40px 0 32px;
   </div>
 </section>
 
-<!-- DOWNLOAD -->
 <section id="download" class="download">
   <div class="container">
     <div class="download-inner">
       <h2>Get Chatter Box<br>on your phone</h2>
       <p>Free forever. No ads. No subscription. No catch.</p>
-      <a href="chatterbox.apk" download class="download-btn">
+      <a href="https://github.com/virajkaim97O-in/chatter-box/releases/download/v1.0/Chatter_%20Box_V1.0_1793002069029.apk" download class="download-btn">
         <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
           <path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
-        Download APK · 6.2 MB
+        Download APK · Android 8.0+
       </a>
       <div class="download-info">
         <span><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>Android 8.0+</span>
@@ -636,7 +616,6 @@ footer{border-top:1px solid var(--bd);padding:40px 0 32px;
   </div>
 </section>
 
-<!-- FAQ -->
 <section id="faq">
   <div class="container">
     <div class="section-head">
@@ -651,7 +630,7 @@ footer{border-top:1px solid var(--bd);padding:40px 0 32px;
           <span class="plus"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>
         </button>
         <div class="faq-a">
-          Yes. Every message is encrypted on your device using AES-256-GCM. The key is derived from your password and a shared secret between you and the other person. The server only sees ciphertext. We cannot read your messages. Anyone who tells you otherwise is lying.
+          Yes. Every message is encrypted on your device using AES-256-GCM. The key is derived from your password and a shared secret between you and the other person. The server only sees ciphertext. We cannot read your messages.
         </div>
       </div>
       <div class="faq-item">
@@ -687,7 +666,7 @@ footer{border-top:1px solid var(--bd);padding:40px 0 32px;
           <span class="plus"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>
         </button>
         <div class="faq-a">
-          Not yet. Text and emoji only for now. Media requires Firebase Storage, which costs money per month even on the smallest plan. If the app ever supports media, it will be advertised clearly on this page.
+          Not yet. Text and emoji only for now. Media requires Firebase Storage, which costs money per month. If the app ever supports media, it will be advertised clearly on this page.
         </div>
       </div>
       <div class="faq-item">
@@ -696,14 +675,13 @@ footer{border-top:1px solid var(--bd);padding:40px 0 32px;
           <span class="plus"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>
         </button>
         <div class="faq-a">
-          No, and we won't pretend otherwise. Signal uses the Signal Protocol with forward secrecy and years of cryptographic audits. Chatter Box uses a simpler ECDH + AES-GCM scheme that is <em>mathematically strong</em> but lacks forward secrecy and hasn't been audited. If you're a journalist, activist, or high-risk user, use Signal. For everyday conversations, Chatter Box is more than enough.
+          No, and we won't pretend otherwise. Signal uses the Signal Protocol with forward secrecy and years of audits. Chatter Box uses a simpler ECDH + AES-GCM scheme that is mathematically strong but lacks forward secrecy and hasn't been audited. If you're a journalist, activist, or high-risk user, use Signal. For everyday conversations, Chatter Box is more than enough.
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- FOOTER -->
 <footer>
   <div class="footer-inner">
     <div class="footer-logo">
@@ -730,7 +708,6 @@ footer{border-top:1px solid var(--bd);padding:40px 0 32px;
 <div class="toast" id="toast"></div>
 
 <script>
-/* FAQ ACCORDION */
 document.querySelectorAll(".faq-q").forEach(btn => {
   btn.addEventListener("click", () => {
     const item = btn.closest(".faq-item");
@@ -740,7 +717,6 @@ document.querySelectorAll(".faq-q").forEach(btn => {
   });
 });
 
-/* SMOOTH ANCHOR SCROLL WITH OFFSET */
 document.querySelectorAll('a[href^="#"]').forEach(a => {
   a.addEventListener("click", (e) => {
     const id = a.getAttribute("href");
@@ -754,12 +730,9 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
   });
 });
 
-/* SCROLL REVEAL — refresh animations on scroll */
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.style.animationPlayState = "running";
-    }
+    if (entry.isIntersecting) entry.target.style.animationPlayState = "running";
   });
 }, { threshold: 0.1 });
 document.querySelectorAll(".feature, .step, .security-item, .faq-item").forEach(el => {
@@ -767,7 +740,6 @@ document.querySelectorAll(".feature, .step, .security-item, .faq-item").forEach(
   observer.observe(el);
 });
 
-/* DOWNLOAD — check if APK exists, show helpful toast if not */
 document.querySelector(".download-btn")?.addEventListener("click", async (e) => {
   const href = e.currentTarget.getAttribute("href");
   if (!href) return;
@@ -776,11 +748,10 @@ document.querySelector(".download-btn")?.addEventListener("click", async (e) => 
     if (!res.ok) throw new Error("not found");
   } catch {
     e.preventDefault();
-    showToast("APK not uploaded yet — coming soon.", true);
+    showToast("APK not found — check the release is published, not draft.", true);
   }
 });
 
-/* TOAST */
 function showToast(msg, isError = false) {
   const t = document.getElementById("toast");
   t.textContent = msg;
@@ -790,12 +761,9 @@ function showToast(msg, isError = false) {
   showToast._t = setTimeout(() => t.classList.remove("show"), 3200);
 }
 
-/* NAV SHRINK ON SCROLL */
-let lastScroll = 0;
 window.addEventListener("scroll", () => {
   const nav = document.querySelector("nav");
-  const scrolled = window.scrollY > 20;
-  nav.style.boxShadow = scrolled ? "0 4px 24px rgba(0,0,0,.4)" : "none";
+  nav.style.boxShadow = window.scrollY > 20 ? "0 4px 24px rgba(0,0,0,.4)" : "none";
 }, { passive: true });
 </script>
 </body>
