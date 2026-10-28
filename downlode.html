@@ -13,9 +13,7 @@
   --p:#0EA5E9;--p2:#38BDF8;--p3:#00E5FF;
   --pink:#EC4899;--gold:#FBBF24;--ok:#22C55E;
   --glass:rgba(13,18,25,.72);
-  --e2:0 8px 24px rgba(0,0,0,.25);
   --e3:0 16px 40px rgba(0,0,0,.35);
-  --e4:0 32px 80px rgba(0,0,0,.5);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
@@ -24,8 +22,6 @@ body{background:var(--bg);color:var(--tx);
   font-size:16px;line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased;}
 a{color:inherit;text-decoration:none;}
 button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit;font-size:inherit;}
-img{max-width:100%;display:block;}
-
 .bg-orb{position:fixed;border-radius:50%;filter:blur(100px);
   -webkit-filter:blur(100px);pointer-events:none;z-index:0;opacity:.5;}
 .bg-orb.a{width:500px;height:500px;background:var(--p);top:-180px;left:-180px;
@@ -34,15 +30,10 @@ img{max-width:100%;display:block;}
   animation:orbB 24s ease-in-out infinite;opacity:.35;}
 .bg-orb.c{width:380px;height:380px;background:var(--p3);bottom:5%;left:15%;
   animation:orbC 28s ease-in-out infinite;opacity:.25;}
-@keyframes orbA{0%,100%{transform:translate(0,0) scale(1);}
-  50%{transform:translate(80px,60px) scale(1.15);}}
-@keyframes orbB{0%,100%{transform:translate(0,0) scale(1);}
-  50%{transform:translate(-80px,-60px) scale(1.2);}}
-@keyframes orbC{0%,100%{transform:translate(0,0) scale(1);}
-  50%{transform:translate(60px,-40px) scale(.85);}}
-
+@keyframes orbA{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(80px,60px) scale(1.15);}}
+@keyframes orbB{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(-80px,-60px) scale(1.2);}}
+@keyframes orbC{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(60px,-40px) scale(.85);}}
 .container{max-width:1180px;margin:0 auto;padding:0 24px;position:relative;z-index:1;}
-
 nav{position:fixed;top:0;left:0;right:0;z-index:100;
   background:rgba(6,9,15,.72);backdrop-filter:blur(20px) saturate(140%);
   -webkit-backdrop-filter:blur(20px) saturate(140%);
@@ -66,13 +57,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;
 .nav-cta{padding:8px 18px;background:var(--p);color:#fff;border-radius:8px;
   font-weight:800;font-size:13px;letter-spacing:.5px;text-transform:uppercase;
   box-shadow:0 0 20px rgba(14,165,233,.35);transition:all .2s;}
-.nav-cta:hover{background:var(--p2);transform:translateY(-1px);
-  box-shadow:0 0 30px rgba(14,165,233,.5);}
-@media (max-width:720px){
-  .nav-links{display:none;}
-  .nav-cta{font-size:12px;padding:7px 14px;}
-}
-
+.nav-cta:hover{background:var(--p2);transform:translateY(-1px);}
+@media (max-width:720px){.nav-links{display:none;}.nav-cta{font-size:12px;padding:7px 14px;}}
 .hero{padding:140px 0 80px;text-align:center;position:relative;}
 .hero-badge{display:inline-flex;align-items:center;gap:8px;
   padding:6px 14px;background:var(--s2);border:1px solid var(--bd2);
@@ -83,11 +69,9 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;
   box-shadow:0 0 10px var(--ok);animation:pulse 2s infinite;}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.5;}}
 .hero h1{font-size:clamp(38px,7vw,68px);font-weight:900;line-height:1.05;
-  letter-spacing:-2px;margin-bottom:24px;
-  animation:fadeUp .8s ease backwards .1s;}
+  letter-spacing:-2px;margin-bottom:24px;animation:fadeUp .8s ease backwards .1s;}
 .hero h1 .accent{background:linear-gradient(135deg,var(--p),var(--p3),var(--pink));
-  -webkit-background-clip:text;background-clip:text;
-  -webkit-text-fill-color:transparent;}
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
 .hero-sub{font-size:clamp(16px,2.2vw,20px);color:var(--mt);max-width:640px;
   margin:0 auto 40px;animation:fadeUp .8s ease backwards .2s;}
 .hero-cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;
@@ -95,79 +79,61 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;
 .btn-primary{display:inline-flex;align-items:center;gap:10px;
   padding:16px 32px;background:var(--p);color:#fff;border-radius:12px;
   font-weight:800;font-size:15px;letter-spacing:.5px;text-transform:uppercase;
-  box-shadow:0 8px 32px rgba(14,165,233,.4);transition:all .2s;position:relative;
-  overflow:hidden;}
+  box-shadow:0 8px 32px rgba(14,165,233,.4);transition:all .2s;position:relative;overflow:hidden;}
 .btn-primary::after{content:'';position:absolute;inset:0;
-  background:linear-gradient(180deg,rgba(255,255,255,.2),transparent 50%);
-  pointer-events:none;}
-.btn-primary:hover{background:var(--p2);transform:translateY(-2px);
-  box-shadow:0 12px 40px rgba(14,165,233,.55);}
-.btn-primary:active{transform:translateY(0);}
+  background:linear-gradient(180deg,rgba(255,255,255,.2),transparent 50%);pointer-events:none;}
+.btn-primary:hover{background:var(--p2);transform:translateY(-2px);}
 .btn-primary svg{width:20px;height:20px;stroke:#fff;fill:none;
   stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
 .btn-secondary{display:inline-flex;align-items:center;gap:10px;
   padding:16px 28px;background:var(--s2);border:1px solid var(--bd2);
-  color:var(--tx);border-radius:12px;font-weight:700;font-size:14px;
-  transition:all .2s;}
+  color:var(--tx);border-radius:12px;font-weight:700;font-size:14px;transition:all .2s;}
 .btn-secondary:hover{background:var(--s3);border-color:var(--p);}
 .hero-meta{display:flex;justify-content:center;gap:24px;flex-wrap:wrap;
-  font-size:13px;color:var(--mt2);margin-top:24px;
-  animation:fadeUp .8s ease backwards .4s;}
+  font-size:13px;color:var(--mt2);margin-top:24px;animation:fadeUp .8s ease backwards .4s;}
 .hero-meta span{display:flex;align-items:center;gap:6px;}
 .hero-meta svg{width:14px;height:14px;stroke:var(--p);fill:none;
   stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
-
 .hero-phone{margin:60px auto 0;width:280px;height:560px;position:relative;
   animation:fadeUp 1s ease backwards .5s,float 6s ease-in-out infinite .5s;}
-@keyframes float{0%,100%{transform:translateY(0);}
-  50%{transform:translateY(-12px);}}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-12px);}}
 .phone-frame{width:100%;height:100%;border-radius:36px;
-  background:linear-gradient(160deg,#1a1f2a,#0b0e14);
-  padding:10px;box-shadow:
-    0 30px 80px rgba(0,0,0,.6),
-    0 0 0 1px rgba(255,255,255,.08),
-    0 0 60px rgba(14,165,233,.2);
-  position:relative;overflow:hidden;}
+  background:linear-gradient(160deg,#1a1f2a,#0b0e14);padding:10px;
+  box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.08),
+    0 0 60px rgba(14,165,233,.2);position:relative;overflow:hidden;}
 .phone-frame::before{content:'';position:absolute;top:8px;left:50%;
   transform:translateX(-50%);width:80px;height:20px;
   background:#000;border-radius:20px;z-index:2;}
-.phone-screen{width:100%;height:100%;border-radius:28px;
-  background:var(--bg);overflow:hidden;position:relative;padding:36px 14px 14px;
+.phone-screen{width:100%;height:100%;border-radius:28px;background:var(--bg);
+  overflow:hidden;position:relative;padding:36px 14px 14px;
   display:flex;flex-direction:column;gap:10px;}
 .mock-msg{padding:10px 14px;border-radius:14px;font-size:12px;
   line-height:1.4;max-width:82%;animation:msgIn .6s ease backwards;}
 .mock-msg.them{background:var(--s2);border:1px solid var(--bd);
   align-self:flex-start;border-bottom-left-radius:4px;animation-delay:1s;}
 .mock-msg.me{background:var(--p);color:#fff;align-self:flex-end;
-  border-bottom-right-radius:4px;box-shadow:0 4px 16px rgba(14,165,233,.3);
-  animation-delay:1.3s;}
+  border-bottom-right-radius:4px;box-shadow:0 4px 16px rgba(14,165,233,.3);animation-delay:1.3s;}
 .mock-msg.them:nth-child(3){animation-delay:1.6s;}
 .mock-msg.me:nth-child(4){animation-delay:1.9s;max-width:70%;}
-.mock-msg.typing{background:transparent;border:none;padding:4px 8px;
-  animation-delay:2.2s;}
+.mock-msg.typing{background:transparent;border:none;padding:4px 8px;animation-delay:2.2s;}
 .mock-typing-dots{display:inline-flex;gap:3px;padding:8px 12px;
   background:var(--s2);border-radius:14px;border:1px solid var(--bd);}
 .mock-typing-dots span{width:5px;height:5px;border-radius:50%;
   background:var(--mt);animation:typeBounce 1.2s infinite;}
 .mock-typing-dots span:nth-child(2){animation-delay:.15s;}
 .mock-typing-dots span:nth-child(3){animation-delay:.3s;}
-@keyframes typeBounce{0%,60%,100%{transform:translateY(0);opacity:.4;}
-  30%{transform:translateY(-3px);opacity:1;}}
-@keyframes msgIn{from{opacity:0;transform:translateY(8px);}
-  to{opacity:1;transform:translateY(0);}}
+@keyframes typeBounce{0%,60%,100%{transform:translateY(0);opacity:.4;}30%{transform:translateY(-3px);opacity:1;}}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 .mock-composer{margin-top:auto;display:flex;gap:6px;align-items:center;
-  padding:8px;background:var(--s2);border-radius:12px;
-  border:1px solid var(--bd);animation:msgIn .6s ease backwards 2.5s;}
+  padding:8px;background:var(--s2);border-radius:12px;border:1px solid var(--bd);
+  animation:msgIn .6s ease backwards 2.5s;}
 .mock-composer input{flex:1;background:transparent;border:none;outline:none;
   font-size:11px;color:var(--mt2);}
 .mock-send{width:28px;height:28px;border-radius:8px;background:var(--p);
   display:grid;place-items:center;flex-shrink:0;}
 .mock-send svg{width:12px;height:12px;stroke:#fff;fill:none;
   stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
-
-@keyframes fadeUp{from{opacity:0;transform:translateY(30px);}
-  to{opacity:1;transform:translateY(0);}}
-
+@keyframes fadeUp{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
 section{padding:100px 0;position:relative;}
 .section-head{text-align:center;max-width:680px;margin:0 auto 60px;}
 .section-head h2{font-size:clamp(28px,4.5vw,44px);font-weight:900;
@@ -175,16 +141,12 @@ section{padding:100px 0;position:relative;}
 .section-head h2 .accent{color:var(--p);}
 .section-head p{font-size:17px;color:var(--mt);}
 .section-tag{display:inline-block;font-size:12px;font-weight:800;
-  letter-spacing:1.5px;text-transform:uppercase;color:var(--p);
-  margin-bottom:16px;}
-
-.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
-  gap:20px;}
+  letter-spacing:1.5px;text-transform:uppercase;color:var(--p);margin-bottom:16px;}
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;}
 .feature{background:var(--glass);border:1px solid var(--bd);
   border-radius:16px;padding:28px;position:relative;overflow:hidden;
   backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-  transition:transform .3s,border-color .3s,box-shadow .3s;
-  animation:fadeUp .8s ease backwards;}
+  transition:transform .3s,border-color .3s,box-shadow .3s;animation:fadeUp .8s ease backwards;}
 .feature:nth-child(1){animation-delay:.05s;}
 .feature:nth-child(2){animation-delay:.1s;}
 .feature:nth-child(3){animation-delay:.15s;}
@@ -195,30 +157,19 @@ section{padding:100px 0;position:relative;}
 .feature:nth-child(8){animation-delay:.4s;}
 .feature:hover{transform:translateY(-4px);border-color:rgba(14,165,233,.4);
   box-shadow:0 12px 40px rgba(14,165,233,.15);}
-.feature::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
-  background:linear-gradient(90deg,transparent,var(--p),transparent);
-  opacity:0;transition:opacity .3s;}
-.feature:hover::before{opacity:.8;}
 .feature-icon{width:52px;height:52px;border-radius:12px;
   background:rgba(14,165,233,.12);border:1px solid rgba(14,165,233,.25);
-  display:grid;place-items:center;margin-bottom:18px;
-  transition:transform .3s,background .3s;}
-.feature:hover .feature-icon{transform:scale(1.08);
-  background:rgba(14,165,233,.2);}
+  display:grid;place-items:center;margin-bottom:18px;transition:transform .3s,background .3s;}
+.feature:hover .feature-icon{transform:scale(1.08);background:rgba(14,165,233,.2);}
 .feature-icon svg{width:24px;height:24px;stroke:var(--p);fill:none;
   stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
-.feature h3{font-size:17px;font-weight:800;margin-bottom:8px;
-  letter-spacing:-.3px;}
+.feature h3{font-size:17px;font-weight:800;margin-bottom:8px;letter-spacing:-.3px;}
 .feature p{font-size:14px;color:var(--mt);line-height:1.6;}
-
-.security{background:var(--bg2);border-top:1px solid var(--bd);
-  border-bottom:1px solid var(--bd);}
-.security-inner{display:grid;grid-template-columns:1fr 1fr;gap:60px;
-  align-items:center;}
+.security{background:var(--bg2);border-top:1px solid var(--bd);border-bottom:1px solid var(--bd);}
+.security-inner{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;}
 @media (max-width:900px){.security-inner{grid-template-columns:1fr;gap:40px;}}
 .security-list{display:flex;flex-direction:column;gap:24px;}
-.security-item{display:flex;gap:16px;align-items:flex-start;
-  animation:fadeUp .6s ease backwards;}
+.security-item{display:flex;gap:16px;align-items:flex-start;animation:fadeUp .6s ease backwards;}
 .security-item:nth-child(1){animation-delay:.1s;}
 .security-item:nth-child(2){animation-delay:.2s;}
 .security-item:nth-child(3){animation-delay:.3s;}
@@ -230,31 +181,23 @@ section{padding:100px 0;position:relative;}
 .security-item p{font-size:13px;color:var(--mt);line-height:1.55;}
 .security-visual{position:relative;aspect-ratio:1;max-width:460px;
   margin:0 auto;display:grid;place-items:center;}
-.security-shield{width:100%;height:100%;position:relative;
-  display:grid;place-items:center;
-  animation:shieldFloat 6s ease-in-out infinite;}
-@keyframes shieldFloat{0%,100%{transform:translateY(0) rotate(0);}
-  50%{transform:translateY(-10px) rotate(2deg);}}
 .shield-ring{position:absolute;border-radius:50%;border:1px solid;
   border-color:rgba(14,165,233,.2);animation:ringPulse 4s ease-in-out infinite;}
 .shield-ring:nth-child(1){width:100%;height:100%;animation-delay:0s;}
-.shield-ring:nth-child(2){width:75%;height:75%;border-color:rgba(14,165,233,.35);
-  animation-delay:1s;}
-.shield-ring:nth-child(3){width:50%;height:50%;border-color:rgba(14,165,233,.5);
-  animation-delay:2s;}
-@keyframes ringPulse{0%,100%{transform:scale(1);opacity:.5;}
-  50%{transform:scale(1.05);opacity:1;}}
+.shield-ring:nth-child(2){width:75%;height:75%;border-color:rgba(14,165,233,.35);animation-delay:1s;}
+.shield-ring:nth-child(3){width:50%;height:50%;border-color:rgba(14,165,233,.5);animation-delay:2s;}
+@keyframes ringPulse{0%,100%{transform:scale(1);opacity:.5;}50%{transform:scale(1.05);opacity:1;}}
 .shield-icon{width:120px;height:120px;border-radius:24px;background:var(--p);
-  display:grid;place-items:center;box-shadow:0 0 60px rgba(14,165,233,.6),
-    0 0 100px rgba(14,165,233,.3),inset 0 2px 0 rgba(255,255,255,.25);
-  position:relative;z-index:1;animation:shieldGlow 3s ease-in-out infinite;}
+  display:grid;place-items:center;
+  box-shadow:0 0 60px rgba(14,165,233,.6),0 0 100px rgba(14,165,233,.3),
+    inset 0 2px 0 rgba(255,255,255,.25);position:relative;z-index:1;
+  animation:shieldGlow 3s ease-in-out infinite;}
 @keyframes shieldGlow{0%,100%{box-shadow:0 0 60px rgba(14,165,233,.6),
     0 0 100px rgba(14,165,233,.3),inset 0 2px 0 rgba(255,255,255,.25);}
   50%{box-shadow:0 0 80px rgba(14,165,233,.9),
     0 0 140px rgba(14,165,233,.5),inset 0 2px 0 rgba(255,255,255,.25);}}
-.shield-icon svg{width:60px;height:60px;stroke:#fff;fill:none;stroke-width:1.8;
-  stroke-linecap:round;stroke-linejoin:round;}
-
+.shield-icon svg{width:60px;height:60px;stroke:#fff;fill:none;
+  stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
 .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
   gap:32px;position:relative;}
 .step{text-align:center;animation:fadeUp .6s ease backwards;}
@@ -268,11 +211,10 @@ section{padding:100px 0;position:relative;}
   box-shadow:0 0 30px rgba(14,165,233,.2);}
 .step h4{font-size:17px;font-weight:800;margin-bottom:8px;}
 .step p{font-size:14px;color:var(--mt);}
-
 .download{background:linear-gradient(135deg,
-  rgba(14,165,233,.06),rgba(236,72,153,.04));border-top:1px solid var(--bd);
-  border-bottom:1px solid var(--bd);text-align:center;position:relative;
-  overflow:hidden;}
+  rgba(14,165,233,.06),rgba(236,72,153,.04));
+  border-top:1px solid var(--bd);border-bottom:1px solid var(--bd);
+  text-align:center;position:relative;overflow:hidden;}
 .download::before{content:'';position:absolute;inset:0;
   background:radial-gradient(circle at 50% 50%,
     rgba(14,165,233,.15),transparent 60%);pointer-events:none;}
@@ -284,13 +226,12 @@ section{padding:100px 0;position:relative;}
   padding:20px 44px;background:var(--p);color:#fff;border-radius:14px;
   font-weight:900;font-size:17px;letter-spacing:.8px;text-transform:uppercase;
   box-shadow:0 12px 40px rgba(14,165,233,.5);transition:all .3s;
-  position:relative;overflow:hidden;animation:pulse-shadow 3s ease-in-out infinite;}
+  position:relative;overflow:hidden;
+  animation:pulse-shadow 3s ease-in-out infinite;}
 @keyframes pulse-shadow{0%,100%{box-shadow:0 12px 40px rgba(14,165,233,.5);}
-  50%{box-shadow:0 12px 60px rgba(14,165,233,.8),
-    0 0 100px rgba(14,165,233,.3);}}
+  50%{box-shadow:0 12px 60px rgba(14,165,233,.8),0 0 100px rgba(14,165,233,.3);}}
 .download-btn::after{content:'';position:absolute;inset:0;
-  background:linear-gradient(180deg,rgba(255,255,255,.2),transparent 50%);
-  pointer-events:none;}
+  background:linear-gradient(180deg,rgba(255,255,255,.2),transparent 50%);pointer-events:none;}
 .download-btn:hover{background:var(--p2);transform:translateY(-3px);}
 .download-btn svg{width:24px;height:24px;stroke:#fff;fill:none;
   stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
@@ -299,11 +240,10 @@ section{padding:100px 0;position:relative;}
 .download-info span{display:flex;align-items:center;gap:6px;}
 .download-info svg{width:14px;height:14px;stroke:var(--p);fill:none;
   stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
-
 .faq{max-width:760px;margin:0 auto;}
 .faq-item{background:var(--s);border:1px solid var(--bd);
-  border-radius:12px;margin-bottom:12px;overflow:hidden;
-  transition:border-color .2s;animation:fadeUp .6s ease backwards;}
+  border-radius:12px;margin-bottom:12px;overflow:hidden;transition:border-color .2s;
+  animation:fadeUp .6s ease backwards;}
 .faq-item:nth-child(1){animation-delay:.05s;}
 .faq-item:nth-child(2){animation-delay:.1s;}
 .faq-item:nth-child(3){animation-delay:.15s;}
@@ -319,18 +259,13 @@ section{padding:100px 0;position:relative;}
   border:1px solid var(--bd2);display:grid;place-items:center;flex-shrink:0;
   transition:transform .3s,background .3s,border-color .3s;}
 .faq-q .plus svg{width:12px;height:12px;stroke:var(--mt);fill:none;
-  stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;
-  transition:stroke .3s;}
-.faq-item.open .plus{transform:rotate(45deg);background:var(--p);
-  border-color:var(--p);}
+  stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;transition:stroke .3s;}
+.faq-item.open .plus{transform:rotate(45deg);background:var(--p);border-color:var(--p);}
 .faq-item.open .plus svg{stroke:#fff;}
-.faq-a{max-height:0;overflow:hidden;
-  transition:max-height .35s ease,padding .35s ease;
+.faq-a{max-height:0;overflow:hidden;transition:max-height .35s ease,padding .35s ease;
   padding:0 24px;color:var(--mt);font-size:14px;line-height:1.65;}
 .faq-item.open .faq-a{max-height:400px;padding:0 24px 20px;}
-
-footer{border-top:1px solid var(--bd);padding:40px 0 32px;
-  background:var(--bg);}
+footer{border-top:1px solid var(--bd);padding:40px 0 32px;background:var(--bg);}
 .footer-inner{max-width:1180px;margin:0 auto;padding:0 24px;
   display:flex;justify-content:space-between;align-items:center;
   gap:24px;flex-wrap:wrap;font-size:13px;color:var(--mt2);}
@@ -343,7 +278,6 @@ footer{border-top:1px solid var(--bd);padding:40px 0 32px;
 .footer-links a:hover{color:var(--p);}
 .footer-note{margin-top:16px;text-align:center;font-size:12px;
   color:var(--mt2);width:100%;padding-top:20px;border-top:1px solid var(--bd);}
-
 .toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(100px);
   background:var(--s3);color:var(--tx);padding:14px 24px;border-radius:12px;
   box-shadow:var(--e3);border:1px solid var(--bd2);font-size:14px;
@@ -351,7 +285,6 @@ footer{border-top:1px solid var(--bd);padding:40px 0 32px;
   transition:all .3s cubic-bezier(.34,1.56,.64,1);}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 .toast.error{border-color:rgba(239,68,68,.5);}
-
 @media (max-width:640px){
   section{padding:70px 0;}
   .hero{padding:120px 0 60px;}
@@ -408,9 +341,7 @@ footer{border-top:1px solid var(--bd);padding:40px 0 32px;
           <path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
         Download APK
       </a>
-      <a href="#features" class="btn-secondary">
-        See features →
-      </a>
+      <a href="#features" class="btn-secondary">See features →</a>
     </div>
     <div class="hero-meta">
       <span><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>No ads</span>
@@ -450,66 +381,49 @@ footer{border-top:1px solid var(--bd);padding:40px 0 32px;
     </div>
     <div class="features-grid">
       <div class="feature">
-        <div class="feature-icon">
-          <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/>
-            <path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-        </div>
+        <div class="feature-icon"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/>
+          <path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
         <h3>End-to-end encryption</h3>
         <p>Every message is encrypted on your device before it leaves. Not even the server can read it.</p>
       </div>
       <div class="feature">
-        <div class="feature-icon">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/>
-            <path d="M12 6v6l4 2"/></svg>
-        </div>
+        <div class="feature-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/>
+          <path d="M12 6v6l4 2"/></svg></div>
         <h3>Real-time delivery</h3>
         <p>Instant message sync. See read receipts, typing indicators, and online status live.</p>
       </div>
       <div class="feature">
-        <div class="feature-icon">
-          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
-            <circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/>
-            <path d="M16 3.13a4 4 0 010 7.75"/></svg>
-        </div>
+        <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
         <h3>Groups &amp; DMs</h3>
         <p>Private 1:1 chats or group conversations with anyone. Same encryption across both.</p>
       </div>
       <div class="feature">
-        <div class="feature-icon">
-          <svg viewBox="0 0 24 24"><path d="M9 17l-5-5 5-5"/>
-            <path d="M20 18v-2a4 4 0 00-4-4H4"/></svg>
-        </div>
+        <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M9 17l-5-5 5-5"/>
+          <path d="M20 18v-2a4 4 0 00-4-4H4"/></svg></div>
         <h3>Reply &amp; react</h3>
         <p>Long-press to reply, react with emoji, copy, edit, or delete messages. All the basics, done well.</p>
       </div>
       <div class="feature">
-        <div class="feature-icon">
-          <svg viewBox="0 0 24 24"><path d="M3 6h18"/>
-            <path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
-            <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
-        </div>
+        <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M3 6h18"/>
+          <path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+          <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></div>
         <h3>Delete for everyone</h3>
         <p>Changed your mind? Delete the message for both sides. Or clear the entire chat instantly.</p>
       </div>
       <div class="feature">
-        <div class="feature-icon">
-          <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg>
-        </div>
+        <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg></div>
         <h3>Star &amp; search</h3>
         <p>Bookmark important messages. Search across all your chats in a flash.</p>
       </div>
       <div class="feature">
-        <div class="feature-icon">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/>
-            <path d="M12 8v4M12 16h.01"/></svg>
-        </div>
+        <div class="feature-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/>
+          <path d="M12 8v4M12 16h.01"/></svg></div>
         <h3>Safety numbers</h3>
         <p>Verify your conversation with a cryptographic fingerprint. The only real defense against man-in-the-middle.</p>
       </div>
       <div class="feature">
-        <div class="feature-icon">
-          <svg viewBox="0 0 24 24"><path d="M12 2L3 7v6c0 5 4 9 9 10 5-1 9-5 9-10V7l-9-5z"/></svg>
-        </div>
+        <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M12 2L3 7v6c0 5 4 9 9 10 5-1 9-5 9-10V7l-9-5z"/></svg></div>
         <h3>Change password safely</h3>
         <p>Update your password anytime. Your vault key re-encrypts automatically — old messages stay readable.</p>
       </div>
@@ -528,31 +442,23 @@ footer{border-top:1px solid var(--bd);padding:40px 0 32px;
       <div class="security-list">
         <div class="security-item">
           <div class="security-num">01</div>
-          <div>
-            <h4>ECDH key exchange</h4>
-            <p>Your device generates a P-256 keypair. The private half is encrypted with your password and never leaves your phone in plaintext.</p>
-          </div>
+          <div><h4>ECDH key exchange</h4>
+            <p>Your device generates a P-256 keypair. The private half is encrypted with your password and never leaves your phone in plaintext.</p></div>
         </div>
         <div class="security-item">
           <div class="security-num">02</div>
-          <div>
-            <h4>AES-256-GCM</h4>
-            <p>Every message uses a fresh IV and the shared secret derived via HKDF. Same standard used by banks and governments.</p>
-          </div>
+          <div><h4>AES-256-GCM</h4>
+            <p>Every message uses a fresh IV and the shared secret derived via HKDF. Same standard used by banks and governments.</p></div>
         </div>
         <div class="security-item">
           <div class="security-num">03</div>
-          <div>
-            <h4>Password-wrapped key</h4>
-            <p>PBKDF2 with 600,000 iterations. Even if someone steals your device data, they can't brute-force your key.</p>
-          </div>
+          <div><h4>Password-wrapped key</h4>
+            <p>PBKDF2 with 600,000 iterations. Even if someone steals your device data, they can't brute-force your key.</p></div>
         </div>
         <div class="security-item">
           <div class="security-num">04</div>
-          <div>
-            <h4>Zero server knowledge</h4>
-            <p>The server only stores ciphertext and metadata. It can never read your messages, ever.</p>
-          </div>
+          <div><h4>Zero server knowledge</h4>
+            <p>The server only stores ciphertext and metadata. It can never read your messages, ever.</p></div>
         </div>
       </div>
       <div class="security-visual">
@@ -602,10 +508,10 @@ footer{border-top:1px solid var(--bd);padding:40px 0 32px;
     <div class="download-inner">
       <h2>Get Chatter Box<br>on your phone</h2>
       <p>Free forever. No ads. No subscription. No catch.</p>
-      <a href="https://github.com/virajkaim97O-in/chatter-box/releases/download/v1.0/Chatter_%20Box_V1.0_1793002069029.apk" download class="download-btn">
+      <a href="https://github.com/virajkaim970-in/chatter-box/releases/download/v1.0/Chatter_Box_v1.0_1793002069029.apk" download class="download-btn">
         <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
           <path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
-        Download APK · Android 8.0+
+        Download APK
       </a>
       <div class="download-info">
         <span><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>Android 8.0+</span>
@@ -625,58 +531,40 @@ footer{border-top:1px solid var(--bd);padding:40px 0 32px;
     </div>
     <div class="faq">
       <div class="faq-item">
-        <button class="faq-q">
-          Is Chatter Box really private?
+        <button class="faq-q">Is Chatter Box really private?
           <span class="plus"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>
         </button>
-        <div class="faq-a">
-          Yes. Every message is encrypted on your device using AES-256-GCM. The key is derived from your password and a shared secret between you and the other person. The server only sees ciphertext. We cannot read your messages.
-        </div>
+        <div class="faq-a">Yes. Every message is encrypted on your device using AES-256-GCM. The key is derived from your password and a shared secret between you and the other person. The server only sees ciphertext. We cannot read your messages.</div>
       </div>
       <div class="faq-item">
-        <button class="faq-q">
-          Why isn't it on Google Play?
+        <button class="faq-q">Why isn't it on Google Play?
           <span class="plus"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>
         </button>
-        <div class="faq-a">
-          Google Play requires a lengthy review, a developer account fee, and ongoing compliance. For a free, open-encryption app built by an independent developer, direct APK distribution is faster and simpler. You install it just like any other app after allowing "install from unknown sources."
-        </div>
+        <div class="faq-a">Google Play requires a lengthy review, a developer account fee, and ongoing compliance. For a free, open-encryption app built by an independent developer, direct APK distribution is faster and simpler. You install it just like any other app after allowing "install from unknown sources."</div>
       </div>
       <div class="faq-item">
-        <button class="faq-q">
-          What happens if I forget my password?
+        <button class="faq-q">What happens if I forget my password?
           <span class="plus"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>
         </button>
-        <div class="faq-a">
-          You lose access to your messages. This is by design — we don't store your password or your key anywhere. If we could recover it, so could an attacker. Write your password down somewhere safe.
-        </div>
+        <div class="faq-a">You lose access to your messages. This is by design — we don't store your password or your key anywhere. If we could recover it, so could an attacker. Write your password down somewhere safe.</div>
       </div>
       <div class="faq-item">
-        <button class="faq-q">
-          Does it cost anything?
+        <button class="faq-q">Does it cost anything?
           <span class="plus"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>
         </button>
-        <div class="faq-a">
-          No. Chatter Box is free forever. There are no ads, no in-app purchases, no premium tier. The app runs on free-tier backend infrastructure. It's a student project, not a business.
-        </div>
+        <div class="faq-a">No. Chatter Box is free forever. There are no ads, no in-app purchases, no premium tier. The app runs on free-tier backend infrastructure. It's a student project, not a business.</div>
       </div>
       <div class="faq-item">
-        <button class="faq-q">
-          Can I send photos or voice messages?
+        <button class="faq-q">Can I send photos or voice messages?
           <span class="plus"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>
         </button>
-        <div class="faq-a">
-          Not yet. Text and emoji only for now. Media requires Firebase Storage, which costs money per month. If the app ever supports media, it will be advertised clearly on this page.
-        </div>
+        <div class="faq-a">Not yet. Text and emoji only for now. Media requires Firebase Storage, which costs money per month. If the app ever supports media, it will be advertised clearly on this page.</div>
       </div>
       <div class="faq-item">
-        <button class="faq-q">
-          Is this as secure as Signal?
+        <button class="faq-q">Is this as secure as Signal?
           <span class="plus"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>
         </button>
-        <div class="faq-a">
-          No, and we won't pretend otherwise. Signal uses the Signal Protocol with forward secrecy and years of audits. Chatter Box uses a simpler ECDH + AES-GCM scheme that is mathematically strong but lacks forward secrecy and hasn't been audited. If you're a journalist, activist, or high-risk user, use Signal. For everyday conversations, Chatter Box is more than enough.
-        </div>
+        <div class="faq-a">No, and we won't pretend otherwise. Signal uses the Signal Protocol with forward secrecy and years of audits. Chatter Box uses a simpler ECDH + AES-GCM scheme that is mathematically strong but lacks forward secrecy and hasn't been audited. If you're a journalist, activist, or high-risk user, use Signal. For everyday conversations, Chatter Box is more than enough.</div>
       </div>
     </div>
   </div>
@@ -724,8 +612,7 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
     const target = document.querySelector(id);
     if (!target) return;
     e.preventDefault();
-    const offset = 80;
-    const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+    const top = target.getBoundingClientRect().top + window.pageYOffset - 80;
     window.scrollTo({ top, behavior: "smooth" });
   });
 });
@@ -748,7 +635,7 @@ document.querySelector(".download-btn")?.addEventListener("click", async (e) => 
     if (!res.ok) throw new Error("not found");
   } catch {
     e.preventDefault();
-    showToast("APK not found — check the release is published, not draft.", true);
+    showToast("APK not found — check that the release is published (not draft).", true);
   }
 });
 
