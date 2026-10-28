@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="theme-color" content="#06090F"/>
+<meta name="description" content="Chatter Box — Private, end-to-end encrypted messaging for Android. No ads. No tracking. Download the APK."/>
+<title>Chatter Box — Private messaging, done right</title>
+<style>
+:root{
+  --bg:#06090F;--bg2:#0A1019;--s:#0D1219;--s2:#151C26;--s3:#1E2833;
+  --bd:#222D3A;--bd2:#303C4C;--tx:#E6EDF5;--mt:#8A96A8;--mt2:#5A6577;
+  --p:#0EA5E9;--p2:#38BDF8;--p3:#00E5FF;
+  --pink:#EC4899;--gold:#FBBF24;--ok:#22C55E;
+  --glass:rgba(13,18,25,.72);
+  --e2:0 8px 24px rgba(0,0,0,.25);
+  --e3:0 16px 40px rgba(0,0,0,.35);
+  --e4:0 32px 80px rgba(0,0,0,.5);
+  --g:0 0 40px rgba(14,165,233,.25);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--tx);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  font-size:16px;line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased;}
+a{color:inherit;text-decoration:none;}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit;font-size:inherit;}
+img{max-width:100%;display:block;}
+
+/* ANIMATED BACKGROUND */
+.bg-orb{position:fixed;border-radius:50%;filter:blur(100px);
+  -webkit-filter:blur(100px);pointer-events:none;z-index:0;opacity:.5;}
+.bg-orb.a{width:500px;height:500px;background:var(--p);top:-180px;left:-180px;
+  animation:orbA 20s ease-in-out infinite;}
+.bg-orb.b{width:450px;height:450px;background:var(--pink);top:40%;right:-200px;
+  animation:orbB 24s ease-in-out infinite;opacity:.35;}
+.bg-orb.c{width:380px;height:380px;background:var(--p3);bottom:5%;left:15%;
+  animation:orbC 28s ease-in-out infinite;opacity:.25;}
+@keyframes orbA{0%,100%{transform:translate(0,0) scale(1);}
+  50%{transform:translate(80px,60px) scale(1.15);}}
+@keyframes orbB{0%,100%{transform:translate(0,0) scale(1);}
+  50%{transform:translate(-80px,-60px) scale(1.2);}}
+@keyframes orbC{0%,100%{transform:translate(0,0) scale(1);}
+  50%{transform:translate(60px,-40px) scale(.85);}}
+
+/* CONTAINER */
+.container{max-width:1180px;margin:0 auto;padding:0 24px;position:relative;z-index:1;}
+
+/* NAVBAR */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;
+  background:rgba(6,9,15,.72);backdrop-filter:blur(20px) saturate(140%);
+  -webkit-backdrop-filter:blur(20px) saturate(140%);
+  border-bottom:1px solid var(--bd);}
+.nav-inner{max-width:1180px;margin:0 auto;padding:14px 24px;
+  display:flex;align-items:center;gap:20px;}
+.nav-logo{display:flex;align-items:center;gap:10px;font-weight:900;
+  letter-spacing:1px;font-size:14px;}
+.nav-logo-icon{width:32px;height:32px;border-radius:8px;background:var(--p);
+  display:grid;place-items:center;box-shadow:0 0 20px rgba(14,165,233,.4);}
+.nav-logo-icon svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2.2;
+  stroke-linecap:round;stroke-linejoin:round;}
+.nav-links{display:flex;gap:24px;margin-left:auto;font-size:14px;
+  font-weight:600;color:var(--mt);}
+.nav-links a{transition:color .2s;position:relative;}
+.nav-links a:hover{color:var(--tx);}
+.nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;right:0;
+  height:2px;background:var(--p);transform:scaleX(0);transition:transform .2s;
+  border-radius:2px;}
+.nav-links a:hover::after{transform:scaleX(1);}
+.nav-cta{padding:8px 18px;background:var(--p);color:#fff;border-radius:8px;
+  font-weight:800;font-size:13px;letter-spacing:.5px;text-transform:uppercase;
+  box-shadow:0 0 20px rgba(14,165,233,.35);transition:all .2s;}
+.nav-cta:hover{background:var(--p2);transform:translateY(-1px);
+  box-shadow:0 0 30px rgba(14,165,233,.5);}
+@media (max-width:720px){
+  .nav-links{display:none;}
+  .nav-cta{font-size:12px;padding:7px 14px;}
+}
+
+/* HERO */
+.hero{padding:140px 0 80px;text-align:center;position:relative;}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;
+  padding:6px 14px;background:var(--s2);border:1px solid var(--bd2);
+  border-radius:100px;font-size:12px;font-weight:700;letter-spacing:.5px;
+  text-transform:uppercase;color:var(--mt);margin-bottom:28px;
+  animation:fadeUp .8s ease backwards;}
+.hero-badge .dot{width:8px;height:8px;border-radius:50%;background:var(--ok);
+  box-shadow:0 0 10px var(--ok);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.5;}}
+.hero h1{font-size:clamp(38px,7vw,68px);font-weight:900;line-height:1.05;
+  letter-spacing:-2px;margin-bottom:24px;
+  animation:fadeUp .8s ease backwards .1s;}
+.hero h1 .accent{background:linear-gradient(135deg,var(--p),var(--p3),var(--pink));
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;}
+.hero-sub{font-size:clamp(16px,2.2vw,20px);color:var(--mt);max-width:640px;
+  margin:0 auto 40px;animation:fadeUp .8s ease backwards .2s;}
+.hero-cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;
+  margin-bottom:20px;animation:fadeUp .8s ease backwards .3s;}
+.btn-primary{display:inline-flex;align-items:center;gap:10px;
+  padding:16px 32px;background:var(--p);color:#fff;border-radius:12px;
+  font-weight:800;font-size:15px;letter-spacing:.5px;text-transform:uppercase;
+  box-shadow:0 8px 32px rgba(14,165,233,.4);transition:all .2s;position:relative;
+  overflow:hidden;}
+.btn-primary::after{content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(255,255,255,.2),transparent 50%);
+  pointer-events:none;}
+.btn-primary:hover{background:var(--p2);transform:translateY(-2px);
+  box-shadow:0 12px 40px rgba(14,165,233,.55);}
+.btn-primary:active{transform:translateY(0);}
+.btn-primary svg{width:20px;height:20px;stroke:#fff;fill:none;
+  stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
+.btn-secondary{display:inline-flex;align-items:center;gap:10px;
+  padding:16px 28px;background:var(--s2);border:1px solid var(--bd2);
+  color:var(--tx);border-radius:12px;font-weight:700;font-size:14px;
+  transition:all .2s;}
+.btn-secondary:hover{background:var(--s3);border-color:var(--p);}
+.hero-meta{display:flex;justify-content:center;gap:24px;flex-wrap:wrap;
+  font-size:13px;color:var(--mt2);margin-top:24px;
+  animation:fadeUp .8s ease backwards .4s;}
+.hero-meta span{display:flex;align-items:center;gap:6px;}
+.hero-meta svg{width:14px;height:14px;stroke:var(--p);fill:none;
+  stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
+
+/* PHONE MOCKUP */
+.hero-phone{margin:60px auto 0;width:280px;height:560px;position:relative;
+  animation:fadeUp 1s ease backwards .5s,float 6s ease-in-out infinite .5s;}
+@keyframes float{0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-12px);}}
+.phone-frame{width:100%;height:100%;border-radius:36px;
+  background:linear-gradient(160deg,#1a1f2a,#0b0e14);
+  padding:10px;box-shadow:
+    0 30px 80px rgba(0,0,0,.6),
+    0 0 0 1px rgba(255,255,255,.08),
+    0 0 60px rgba(14,165,233,.2);
+  position:relative;overflow:hidden;}
+.phone-frame::before{content:'';position:absolute;top:8px;left:50%;
+  transform:translateX(-50%);width:80px;height:20px;
+  background:#000;border-radius:20px;z-index:2;}
+.phone-screen{width:100%;height:100%;border-radius:28px;
+  background:var(--bg);overflow:hidden;position:relative;padding:36px 14px 14px;
+  display:flex;flex-direction:column;gap:10px;}
+.mock-msg{padding:10px 14px;border-radius:14px;font-size:12px;
+  line-height:1.4;max-width:82%;animation:msgIn .6s ease backwards;}
+.mock-msg.them{background:var(--s2);border:1px solid var(--bd);
+  align-self:flex-start;border-bottom-left-radius:4px;
+  animation-delay:1s;}
+.mock-msg.me{background:var(--p);color:#fff;align-self:flex-end;
+  border-bottom-right-radius:4px;box-shadow:0 4px 16px rgba(14,165,233,.3);
+  animation-delay:1.3s;}
+.mock-msg.them:nth-child(3){animation-delay:1.6s;}
+.mock-msg.me:nth-child(4){animation-delay:1.9s;max-width:70%;}
+.mock-msg.typing{background:transparent;border:none;padding:4px 8px;
+  animation-delay:2.2s;}
+.mock-typing-dots{display:inline-flex;gap:3px;padding:8px 12px;
+  background:var(--s2);border-radius:14px;border:1px solid var(--bd);}
+.mock-typing-dots span{width:5px;height:5px;border-radius:50%;
+  background:var(--mt);animation:typeBounce 1.2s infinite;}
+.mock-typing-dots span:nth-child(2){animation-delay:.15s;}
+.mock-typing-dots span:nth-child(3){animation-delay:.3s;}
+@keyframes typeBounce{0%,60%,100%{transform:translateY(0);opacity:.4;}
+  30%{transform:translateY(-3px);opacity:1;}}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px);}
+  to{opacity:1;transform:translateY(0);}}
+.mock-composer{margin-top:auto;display:flex;gap:6px;align-items:center;
+  padding:8px;background:var(--s2);border-radius:12px;
+  border:1px solid var(--bd);animation:msgIn .6s ease backwards 2.5s;}
+.mock-composer input{flex:1;background:transparent;border:none;outline:none;
+  font-size:11px;color:var(--mt2);}
+.mock-send{width:28px;height:28px;border-radius:8px;background:var(--p);
+  display:grid;place-items:center;flex-shrink:0;}
+.mock-send svg{width:12px;height:12px;stroke:#fff;fill:none;
+  stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(30px);}
+  to{opacity:1;transform:translateY(0);}}
+
+/* SECTION */
+section{padding:100px 0;position:relative;}
+.section-head{text-align:center;max-width:680px;margin:0 auto 60px;}
+.section-head h2{font-size:clamp(28px,4.5vw,44px);font-weight:900;
+  letter-spacing:-1.5px;line-height:1.15;margin-bottom:16px;}
+.section-head h2 .accent{color:var(--p);}
+.section-head p{font-size:17px;color:var(--mt);}
+.section-tag{display:inline-block;font-size:12px;font-weight:800;
+  letter-spacing:1.5px;text-transform:uppercase;color:var(--p);
+  margin-bottom:16px;}
+
+/* FEATURES */
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:20px;}
+.feature{background:var(--glass);border:1px solid var(--bd);
+  border-radius:16px;padding:28px;position:relative;overflow:hidden;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  transition:transform .3s,border-color .3s,box-shadow .3s;
+  animation:fadeUp .8s ease backwards;}
+.feature:nth-child(1){animation-delay:.05s;}
+.feature:nth-child(2){animation-delay:.1s;}
+.feature:nth-child(3){animation-delay:.15s;}
+.feature:nth-child(4){animation-delay:.2s;}
+.feature:nth-child(5){animation-delay:.25s;}
+.feature:nth-child(6){animation-delay:.3s;}
+.feature:nth-child(7){animation-delay:.35s;}
+.feature:nth-child(8){animation-delay:.4s;}
+.feature:hover{transform:translateY(-4px);border-color:rgba(14,165,233,.4);
+  box-shadow:0 12px 40px rgba(14,165,233,.15);}
+.feature::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--p),transparent);
+  opacity:0;transition:opacity .3s;}
+.feature:hover::before{opacity:.8;}
+.feature-icon{width:52px;height:52px;border-radius:12px;
+  background:rgba(14,165,233,.12);border:1px solid rgba(14,165,233,.25);
+  display:grid;place-items:center;margin-bottom:18px;
+  transition:transform .3s,background .3s;}
+.feature:hover .feature-icon{transform:scale(1.08);
+  background:rgba(14,165,233,.2);}
+.feature-icon svg{width:24px;height:24px;stroke:var(--p);fill:none;
+  stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.feature h3{font-size:17px;font-weight:800;margin-bottom:8px;
+  letter-spacing:-.3px;}
+.feature p{font-size:14px;color:var(--mt);line-height:1.6;}
+
+/* SECURITY */
+.security{background:var(--bg2);border-top:1px solid var(--bd);
+  border-bottom:1px solid var(--bd);}
+.security-inner{display:grid;grid-template-columns:1fr 1fr;gap:60px;
+  align-items:center;}
+@media (max-width:900px){.security-inner{grid-template-columns:1fr;gap:40px;}}
+.security-list{display:flex;flex-direction:column;gap:24px;}
+.security-item{display:flex;gap:16px;align-items:flex-start;
+  animation:fadeUp .6s ease backwards;}
+.security-item:nth-child(1){animation-delay:.1s;}
+.security-item:nth-child(2){animation-delay:.2s;}
+.security-item:nth-child(3){animation-delay:.3s;}
+.security-item:nth-child(4){animation-delay:.4s;}
+.security-num{width:32px;height:32px;border-radius:8px;background:var(--s2);
+  border:1px solid var(--bd2);display:grid;place-items:center;flex-shrink:0;
+  font-weight:900;font-size:13px;color:var(--p);}
+.security-item h4{font-size:15px;font-weight:800;margin-bottom:4px;}
+.security-item p{font-size:13px;color:var(--mt);line-height:1.55;}
+.security-visual{position:relative;aspect-ratio:1;max-width:460px;
+  margin:0 auto;display:grid;place-items:center;}
+.security-shield{width:100%;height:100%;position:relative;
+  display:grid;place-items:center;
+  animation:shieldFloat 6s ease-in-out infinite;}
+@keyframes shieldFloat{0%,100%{transform:translateY(0) rotate(0);}
+  50%{transform:translateY(-10px) rotate(2deg);}}
+.shield-ring{position:absolute;border-radius:50%;border:1px solid;
+  border-color:rgba(14,165,233,.2);animation:ringPulse 4s ease-in-out infinite;}
+.shield-ring:nth-child(1){width:100%;height:100%;animation-delay:0s;}
+.shield-ring:nth-child(2){width:75%;height:75%;border-color:rgba(14,165,233,.35);
+  animation-delay:1s;}
+.shield-ring:nth-child(3){width:50%;height:50%;border-color:rgba(14,165,233,.5);
+  animation-delay:2s;}
+@keyframes ringPulse{0%,100%{transform:scale(1);opacity:.5;}
+  50%{transform:scale(1.05);opacity:1;}}
+.shield-icon{width:120px;height:120px;border-radius:24px;background:var(--p);
+  display:grid;place-items:center;box-shadow:0 0 60px rgba(14,165,233,.6),
+    0 0 100px rgba(14,165,233,.3),inset 0 2px 0 rgba(255,255,255,.25);
+  position:relative;z-index:1;animation:shieldGlow 3s ease-in-out infinite;}
+@keyframes shieldGlow{0%,100%{box-shadow:0 0 60px rgba(14,165,233,.6),
+    0 0 100px rgba(14,165,233,.3),inset 0 2px 0 rgba(255,255,255,.25);}
+  50%{box-shadow:0 0 80px rgba(14,165,233,.9),
+    0 0 140px rgba(14,165,233,.5),inset 0 2px 0 rgba(255,255,255,.25);}}
+.shield-icon svg{width:60px;height:60px;stroke:#fff;fill:none;stroke-width:1.8;
+  stroke-linecap:round;stroke-linejoin:round;}
+
+/* HOW IT WORKS */
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:32px;position:relative;}
+.step{text-align:center;animation:fadeUp .6s ease backwards;}
+.step:nth-child(1){animation-delay:.1s;}
+.step:nth-child(2){animation-delay:.2s;}
+.step:nth-child(3){animation-delay:.3s;}
+.step-num{width:64px;height:64px;border-radius:50%;
+  background:linear-gradient(135deg,rgba(14,165,233,.2),rgba(56,189,248,.08));
+  border:1px solid rgba(14,165,233,.4);display:grid;place-items:center;
+  margin:0 auto 20px;font-size:24px;font-weight:900;color:var(--p);
+  box-shadow:0 0 30px rgba(14,165,233,.2);}
+.step h4{font-size:17px;font-weight:800;margin-bottom:8px;}
+.step p{font-size:14px;color:var(--mt);}
+
+/* DOWNLOAD */
+.download{background:linear-gradient(135deg,
+  rgba(14,165,233,.06),rgba(236,72,153,.04));border-top:1px solid var(--bd);
+  border-bottom:1px solid var(--bd);text-align:center;position:relative;
+  overflow:hidden;}
+.download::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at 50% 50%,
+    rgba(14,165,233,.15),transparent 60%);pointer-events:none;}
+.download-inner{position:relative;z-index:1;}
+.download h2{font-size:clamp(32px,5vw,52px);font-weight:900;
+  letter-spacing:-2px;line-height:1.1;margin-bottom:16px;}
+.download p{font-size:18px;color:var(--mt);max-width:560px;margin:0 auto 40px;}
+.download-btn{display:inline-flex;align-items:center;gap:12px;
+  padding:20px 44px;background:var(--p);color:#fff;border-radius:14px;
+  font-weight:900;font-size:17px;letter-spacing:.8px;text-transform:uppercase;
+  box-shadow:0 12px 40px rgba(14,165,233,.5);transition:all .3s;
+  position:relative;overflow:hidden;animation:pulse-shadow 3s ease-in-out infinite;}
+@keyframes pulse-shadow{0%,100%{box-shadow:0 12px 40px rgba(14,165,233,.5);}
+  50%{box-shadow:0 12px 60px rgba(14,165,233,.8),
+    0 0 100px rgba(14,165,233,.3);}}
+.download-btn::after{content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(255,255,255,.2),transparent 50%);
+  pointer-events:none;}
+.download-btn:hover{background:var(--p2);transform:translateY(-3px);}
+.download-btn svg{width:24px;height:24px;stroke:#fff;fill:none;
+  stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
+.download-info{display:flex;justify-content:center;gap:28px;flex-wrap:wrap;
+  margin-top:32px;font-size:13px;color:var(--mt2);}
+.download-info span{display:flex;align-items:center;gap:6px;}
+.download-info svg{width:14px;height:14px;stroke:var(--p);fill:none;
+  stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
+
+/* FAQ */
+.faq{max-width:760px;margin:0 auto;}
+.faq-item{background:var(--s);border:1px solid var(--bd);
+  border-radius:12px;margin-bottom:12px;overflow:hidden;
+  transition:border-color .2s;animation:fadeUp .6s ease backwards;}
+.faq-item:nth-child(1){animation-delay:.05s;}
+.faq-item:nth-child(2){animation-delay:.1s;}
+.faq-item:nth-child(3){animation-delay:.15s;}
+.faq-item:nth-child(4){animation-delay:.2s;}
+.faq-item:nth-child(5){animation-delay:.25s;}
+.faq-item:nth-child(6){animation-delay:.3s;}
+.faq-item:hover{border-color:rgba(14,165,233,.35);}
+.faq-q{width:100%;padding:20px 24px;display:flex;align-items:center;
+  justify-content:space-between;gap:16px;text-align:left;
+  font-size:15px;font-weight:700;transition:background .2s;}
+.faq-q:hover{background:var(--s2);}
+.faq-q .plus{width:24px;height:24px;border-radius:50%;background:var(--s2);
+  border:1px solid var(--bd2);display:grid;place-items:center;flex-shrink:0;
+  transition:transform .3s,background .3s,border-color .3s;}
+.faq-q .plus svg{width:12px;height:12px;stroke:var(--mt);fill:none;
+  stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;
+  transition:stroke .3s;}
+.faq-item.open .plus{transform:rotate(45deg);background:var(--p);
+  border-color:var(--p);}
+.faq-item.open .plus svg{stroke:#fff;}
+.faq-a{max-height:0;overflow:hidden;
+  transition:max-height .35s ease,padding .35s ease;
+  padding:0 24px;color:var(--mt);font-size:14px;line-height:1.65;}
+.faq-item.open .faq-a{max-height:400px;padding:0 24px 20px;}
+
+/* FOOTER */
+footer{border-top:1px solid var(--bd);padding:40px 0 32px;
+  background:var(--bg);}
+.footer-inner{max-width:1180px;margin:0 auto;padding:0 24px;
+  display:flex;justify-content:space-between;align-items:center;
+  gap:24px;flex-wrap:wrap;font-size:13px;color:var(--mt2);}
+.footer-logo{display:flex;align-items:center;gap:10px;font-weight:800;
+  color:var(--tx);font-size:14px;letter-spacing:.5px;}
+.footer-logo .nav-logo-icon{width:28px;height:28px;}
+.footer-logo svg{width:16px;height:16px;}
+.footer-links{display:flex;gap:20px;flex-wrap:wrap;}
+.footer-links a{transition:color .2s;}
+.footer-links a:hover{color:var(--p);}
+.footer-note{margin-top:16px;text-align:center;font-size:12px;
+  color:var(--mt2);width:100%;padding-top:20px;border-top:1px solid var(--bd);}
+
+/* TOAST */
+.toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(100px);
+  background:var(--s3);color:var(--tx);padding:14px 24px;border-radius:12px;
+  box-shadow:var(--e3);border:1px solid var(--bd2);font-size:14px;
+  font-weight:600;z-index:1000;opacity:0;pointer-events:none;
+  transition:all .3s cubic-bezier(.34,1.56,.64,1);}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast.error{border-color:rgba(239,68,68,.5);}
+
+@media (max-width:640px){
+  section{padding:70px 0;}
+  .hero{padding:120px 0 60px;}
+  .hero-phone{width:240px;height:480px;}
+  .feature{padding:22px;}
+  .download-btn{padding:16px 32px;font-size:15px;}
+  .download-info{gap:18px;font-size:12px;}
+}
+</style>
+</head>
+<body>
+
+<div class="bg-orb a"></div>
+<div class="bg-orb b"></div>
+<div class="bg-orb c"></div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">
+      <div class="nav-logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2L3 7v6c0 5 4 9 9 10 5-1 9-5 9-10V7l-9-5z"/>
+          <rect x="9" y="11" width="6" height="5" rx="1"/>
+          <path d="M10 11V9a2 2 0 014 0v2"/></svg>
+      </div>
+      CHATTER BOX
+    </a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#security">Security</a>
+      <a href="#how">How it works</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <a href="#download" class="nav-cta">Download</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="container">
+    <div class="hero-badge">
+      <span class="dot"></span>
+      v1.0 · Free · Open encryption
+    </div>
+    <h1>
+      Private messaging,<br>
+      <span class="accent">done right.</span>
+    </h1>
+    <p class="hero-sub">
+      End-to-end encrypted chat for Android. No ads. No tracking.
+      No one — not even us — can read your messages.
+    </p>
+    <div class="hero-cta">
+      <a href="#download" class="btn-primary">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+          <path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+        Download APK
+      </a>
+      <a href="#features" class="btn-secondary">
+        See features →
+      </a>
+    </div>
+    <div class="hero-meta">
+      <span><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>No ads</span>
+      <span><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>No tracking</span>
+      <span><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>Open E2EE</span>
+      <span><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>Free forever</span>
+    </div>
+
+    <div class="hero-phone">
+      <div class="phone-frame">
+        <div class="phone-screen">
+          <div class="mock-msg them">Hey! Just sent you the notes 📚</div>
+          <div class="mock-msg me">Thanks! That saved me tonight</div>
+          <div class="mock-msg them">No problem 😄 Study group at 6?</div>
+          <div class="mock-msg me">I'm in</div>
+          <div class="mock-msg typing">
+            <div class="mock-typing-dots"><span></span><span></span><span></span></div>
+          </div>
+          <div class="mock-composer">
+            <input disabled placeholder="Message"/>
+            <div class="mock-send">
+              <svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="container">
+    <div class="section-head">
+      <div class="section-tag">Features</div>
+      <h2>Everything a <span class="accent">private chat</span><br>should be</h2>
+      <p>Built with care. Nothing extra. Nothing missing.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/>
+            <path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        </div>
+        <h3>End-to-end encryption</h3>
+        <p>Every message is encrypted on your device before it leaves. Not even the server can read it.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/>
+            <path d="M12 6v6l4 2"/></svg>
+        </div>
+        <h3>Real-time delivery</h3>
+        <p>Instant message sync. See read receipts, typing indicators, and online status live.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/>
+            <path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        </div>
+        <h3>Groups &amp; DMs</h3>
+        <p>Private 1:1 chats or group conversations with anyone. Same encryption across both.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><path d="M9 17l-5-5 5-5"/>
+            <path d="M20 18v-2a4 4 0 00-4-4H4"/></svg>
+        </div>
+        <h3>Reply &amp; react</h3>
+        <p>Long-press to reply, react with emoji, copy, edit, or delete messages. All the basics, done well.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><path d="M3 6h18"/>
+            <path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+            <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+        </div>
+        <h3>Delete for everyone</h3>
+        <p>Changed your mind? Delete the message for both sides. Or clear the entire chat instantly.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg>
+        </div>
+        <h3>Star &amp; search</h3>
+        <p>Bookmark important messages. Search across all your chats in a flash.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/>
+            <path d="M12 8v4M12 16h.01"/></svg>
+        </div>
+        <h3>Safety numbers</h3>
+        <p>Verify your conversation with a cryptographic fingerprint. The only real defense against man-in-the-middle.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2L3 7v6c0 5 4 9 9 10 5-1 9-5 9-10V7l-9-5z"/></svg>
+        </div>
+        <h3>Change password safely</h3>
+        <p>Update your password anytime. Your vault key re-encrypts automatically — old messages stay readable.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECURITY -->
+<section id="security" class="security">
+  <div class="container">
+    <div class="section-head">
+      <div class="section-tag">Security</div>
+      <h2>Encryption that <span class="accent">actually means</span> something</h2>
+      <p>No marketing. Just real cryptography, on-device.</p>
+    </div>
+    <div class="security-inner">
+      <div class="security-list">
+        <div class="security-item">
+          <div class="security-num">01</div>
+          <div>
+            <h4>ECDH key exchange</h4>
+            <p>Your device generates a P-256 keypair. The private half is encrypted with your password and never leaves your phone in plaintext.</p>
+          </div>
+        </div>
+        <div class="security-item">
+          <div class="security-num">02</div>
+          <div>
+            <h4>AES-256-GCM</h4>
+            <p>Every message uses a fresh IV and the shared secret derived via HKDF. Same standard used by banks and governments.</p>
+          </div>
+        </div>
+        <div class="security-item">
+          <div class="security-num">03</div>
+          <div>
+            <h4>Password-wrapped key</h4>
+            <p>PBKDF2 with 600,000 iterations. Even if someone steals your device data, they can't brute-force your key.</p>
+          </div>
+        </div>
+        <div class="security-item">
+          <div class="security-num">04</div>
+          <div>
+            <h4>Zero server knowledge</h4>
+            <p>The server only stores ciphertext and metadata. It can never read your messages, ever.</p>
+          </div>
+        </div>
+      </div>
+      <div class="security-visual">
+        <div class="shield-ring"></div>
+        <div class="shield-ring"></div>
+        <div class="shield-ring"></div>
+        <div class="shield-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 2L3 7v6c0 5 4 9 9 10 5-1 9-5 9-10V7l-9-5z"/>
+            <path d="M9 12l2 2 4-4"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="container">
+    <div class="section-head">
+      <div class="section-tag">How it works</div>
+      <h2>Three steps.<br><span class="accent">Two minutes.</span></h2>
+      <p>No phone number. No email verification loop. Just a password.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h4>Download the APK</h4>
+        <p>Tap the download button below. Allow install from unknown sources if your phone asks.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h4>Create an account</h4>
+        <p>Pick an email and a strong password. Your encryption key is generated on-device.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h4>Start chatting</h4>
+        <p>Find your friends by email. Verify safety numbers. Chat with confidence.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DOWNLOAD -->
+<section id="download" class="download">
+  <div class="container">
+    <div class="download-inner">
+      <h2>Get Chatter Box<br>on your phone</h2>
+      <p>Free forever. No ads. No subscription. No catch.</p>
+      <a href="chatterbox.apk" download class="download-btn">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+          <path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+        Download APK · 6.2 MB
+      </a>
+      <div class="download-info">
+        <span><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>Android 8.0+</span>
+        <span><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>Signed &amp; verified</span>
+        <span><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>No Google Play account needed</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="container">
+    <div class="section-head">
+      <div class="section-tag">FAQ</div>
+      <h2>Questions?</h2>
+      <p>Everything you might be wondering, answered honestly.</p>
+    </div>
+    <div class="faq">
+      <div class="faq-item">
+        <button class="faq-q">
+          Is Chatter Box really private?
+          <span class="plus"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>
+        </button>
+        <div class="faq-a">
+          Yes. Every message is encrypted on your device using AES-256-GCM. The key is derived from your password and a shared secret between you and the other person. The server only sees ciphertext. We cannot read your messages. Anyone who tells you otherwise is lying.
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">
+          Why isn't it on Google Play?
+          <span class="plus"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>
+        </button>
+        <div class="faq-a">
+          Google Play requires a lengthy review, a developer account fee, and ongoing compliance. For a free, open-encryption app built by an independent developer, direct APK distribution is faster and simpler. You install it just like any other app after allowing "install from unknown sources."
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">
+          What happens if I forget my password?
+          <span class="plus"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>
+        </button>
+        <div class="faq-a">
+          You lose access to your messages. This is by design — we don't store your password or your key anywhere. If we could recover it, so could an attacker. Write your password down somewhere safe.
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">
+          Does it cost anything?
+          <span class="plus"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>
+        </button>
+        <div class="faq-a">
+          No. Chatter Box is free forever. There are no ads, no in-app purchases, no premium tier. The app runs on free-tier backend infrastructure. It's a student project, not a business.
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">
+          Can I send photos or voice messages?
+          <span class="plus"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>
+        </button>
+        <div class="faq-a">
+          Not yet. Text and emoji only for now. Media requires Firebase Storage, which costs money per month even on the smallest plan. If the app ever supports media, it will be advertised clearly on this page.
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">
+          Is this as secure as Signal?
+          <span class="plus"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>
+        </button>
+        <div class="faq-a">
+          No, and we won't pretend otherwise. Signal uses the Signal Protocol with forward secrecy and years of cryptographic audits. Chatter Box uses a simpler ECDH + AES-GCM scheme that is <em>mathematically strong</em> but lacks forward secrecy and hasn't been audited. If you're a journalist, activist, or high-risk user, use Signal. For everyday conversations, Chatter Box is more than enough.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">
+      <div class="nav-logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2L3 7v6c0 5 4 9 9 10 5-1 9-5 9-10V7l-9-5z"/>
+          <rect x="9" y="11" width="6" height="5" rx="1"/>
+          <path d="M10 11V9a2 2 0 014 0v2"/></svg>
+      </div>
+      CHATTER BOX
+    </div>
+    <div class="footer-links">
+      <a href="#features">Features</a>
+      <a href="#security">Security</a>
+      <a href="#how">Install</a>
+      <a href="#faq">FAQ</a>
+      <a href="#download">Download</a>
+    </div>
+    <div class="footer-note">
+      © 2026 Chatter Box · Built with care · End-to-end encrypted · No trackers on this page either
+    </div>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* FAQ ACCORDION */
+document.querySelectorAll(".faq-q").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const item = btn.closest(".faq-item");
+    const open = item.classList.contains("open");
+    document.querySelectorAll(".faq-item.open").forEach(f => f.classList.remove("open"));
+    if (!open) item.classList.add("open");
+  });
+});
+
+/* SMOOTH ANCHOR SCROLL WITH OFFSET */
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener("click", (e) => {
+    const id = a.getAttribute("href");
+    if (id.length < 2) return;
+    const target = document.querySelector(id);
+    if (!target) return;
+    e.preventDefault();
+    const offset = 80;
+    const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+    window.scrollTo({ top, behavior: "smooth" });
+  });
+});
+
+/* SCROLL REVEAL — refresh animations on scroll */
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.style.animationPlayState = "running";
+    }
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll(".feature, .step, .security-item, .faq-item").forEach(el => {
+  el.style.animationPlayState = "paused";
+  observer.observe(el);
+});
+
+/* DOWNLOAD — check if APK exists, show helpful toast if not */
+document.querySelector(".download-btn")?.addEventListener("click", async (e) => {
+  const href = e.currentTarget.getAttribute("href");
+  if (!href) return;
+  try {
+    const res = await fetch(href, { method: "HEAD" });
+    if (!res.ok) throw new Error("not found");
+  } catch {
+    e.preventDefault();
+    showToast("APK not uploaded yet — coming soon.", true);
+  }
+});
+
+/* TOAST */
+function showToast(msg, isError = false) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.toggle("error", isError);
+  t.classList.add("show");
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => t.classList.remove("show"), 3200);
+}
+
+/* NAV SHRINK ON SCROLL */
+let lastScroll = 0;
+window.addEventListener("scroll", () => {
+  const nav = document.querySelector("nav");
+  const scrolled = window.scrollY > 20;
+  nav.style.boxShadow = scrolled ? "0 4px 24px rgba(0,0,0,.4)" : "none";
+}, { passive: true });
+</script>
+</body>
+</html>
