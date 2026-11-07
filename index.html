@@ -221,6 +221,7 @@ letter-spacing:-.5px;box-shadow:var(--e1),inset 0 1px 0 rgba(255,255,255,.2);}
 .avatar::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.15),transparent 50%);pointer-events:none;}
 .avatar.sm{width:34px;height:34px;font-size:13px;border-radius:8px;}
 .avatar.lg{width:52px;height:52px;font-size:20px;border-radius:12px;}
+.avatar img.profile-avatar-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:inherit;z-index:1;}
 .avatar .online-dot{position:absolute;bottom:-1px;right:-1px;width:11px;height:11px;border-radius:50%;
 background:var(--ok);border:2px solid var(--bg);box-shadow:0 0 0 2px rgba(34,197,94,.3);}
 .avatar.sm .online-dot{width:9px;height:9px;border-width:1.5px;}
@@ -485,6 +486,7 @@ animation-iteration-count:1!important;transition-duration:.01ms!important;}}
     <div class="drawer-items">
       <button class="drawer-item" id="drawerNewChat"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>New chat</button>
       <button class="drawer-item" id="drawerStarred"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg>Starred<span class="badge" id="starCount">0</span></button>
+      <button class="drawer-item" id="drawerProfile"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/></svg>Edit profile</button>
       <button class="drawer-item" id="drawerSettings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33h0a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51h0a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82v0a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings</button>
     </div>
     <div class="drawer-spacer"></div>
@@ -607,6 +609,40 @@ animation-iteration-count:1!important;transition-duration:.01ms!important;}}
       <button class="btn btn-ghost" style="margin-top:8px" onclick="document.getElementById('modal-new').classList.remove('active')">Cancel</button>
     </div></div>
 
+    <div id="modal-profile" class="modal"><div class="sheet">
+      <div class="sheet-handle"></div>
+      <h2 class="sheet-title">Edit profile</h2>
+      <div style="display:flex;align-items:center;gap:14px;margin:16px 0">
+        <div class="avatar lg" id="profilePreview">?</div>
+        <div style="flex:1">
+          <label class="toggle-label" for="profilePhoto">Profile photo</label>
+          <input id="profilePhoto" type="file" accept="image/*" style="display:block;width:100%;margin-top:8px;font-size:12px"/>
+        </div>
+      </div>
+      <div class="field"><label>Display name</label>
+        <input id="profileName" maxlength="40" placeholder="Your name" style="width:100%;padding:13px 14px;background:var(--s2);border:1px solid var(--bd2);border-radius:10px;color:var(--tx);outline:none"/></div>
+      <p class="err" id="profileErr"></p>
+      <button class="btn btn-primary" id="btnSaveProfile">Save profile</button>
+      <button class="btn btn-ghost" style="margin-top:6px" onclick="document.getElementById('modal-profile').classList.remove('active')">Cancel</button>
+    </div></div>
+
+    <div id="modal-group-controls" class="modal"><div class="sheet">
+      <div class="sheet-handle"></div>
+      <h2 class="sheet-title">Group controls</h2>
+      <p class="sheet-sub" id="groupControlSub">Manage this group.</p>
+      <div id="groupAdminTools">
+        <div class="field"><label>Group name</label>
+          <input id="manageGroupName" maxlength="40" style="width:100%;padding:13px 14px;background:var(--s2);border:1px solid var(--bd2);border-radius:10px;color:var(--tx);outline:none"/></div>
+        <button class="btn btn-primary" id="btnRenameGroup">Save group name</button>
+        <p class="sheet-sub" style="margin:16px 0 6px">Add members</p>
+        <div id="groupAddList"></div>
+        <p class="sheet-sub" style="margin:16px 0 6px">Current members</p>
+        <div id="groupManageMembers"></div>
+      </div>
+      <button class="menu-item danger" id="btnLeaveGroup" style="margin-top:8px">Leave group</button>
+      <button class="btn btn-ghost" style="margin-top:8px" onclick="document.getElementById('modal-group-controls').classList.remove('active')">Close</button>
+    </div></div>
+
     <div id="modal-group" class="modal"><div class="sheet">
       <div class="sheet-handle"></div>
       <h2 class="sheet-title">New group</h2>
@@ -634,6 +670,8 @@ animation-iteration-count:1!important;transition-duration:.01ms!important;}}
     <div id="modal-menu" class="modal"><div class="sheet">
       <div class="sheet-handle"></div>
       <p class="sheet-sub" id="menuConvName" style="margin-bottom:8px;font-weight:700;color:var(--tx);font-size:13px;text-transform:none;"></p>
+      <button class="menu-item" id="menuGroupControls" style="display:none"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>Group controls</button>
+      <button class="menu-item danger" id="menuBlockUser" style="display:none"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>Block user</button>
       <button class="menu-item" id="menuVerify"><svg viewBox="0 0 24 24"><path d="M12 2L3 7v6c0 5 4 9 9 10 5-1 9-5 9-10V7l-9-5z"/><path d="M9 12l2 2 4-4"/></svg>Verify encryption</button>
       <button class="menu-item danger" id="menuClear"><svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
         <div>Clear chat for everyone<span class="menu-sub">Deletes all messages for both people</span></div></button>
@@ -727,6 +765,7 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
 import { getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, collection, addDoc,
          query, where, orderBy, limit, onSnapshot, serverTimestamp, getDocs,
          writeBatch, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCe6Q8aExpgyabRv29v9_j8Pho2eGQyl4Q",
@@ -739,6 +778,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const storage = getStorage(app);
 
 /* SPLASH */
 const splashStart = Date.now();
@@ -778,7 +818,8 @@ async function createIdentity(uid, email, password) {
   const kek = await deriveKek(password, salt, ITER);
   const wrapped = await crypto.subtle.encrypt({ name:"AES-GCM", iv }, kek, privPkcs8);
   await setDoc(doc(db, "users", uid), {
-    email, pubKey: b64(pubRaw), encPrivKey: b64(wrapped), privIv: b64(iv),
+    email, displayName: email.split("@")[0], photoURL: "",
+    pubKey: b64(pubRaw), encPrivKey: b64(wrapped), privIv: b64(iv),
     kdfSalt: b64(salt), kdfIter: ITER, lastSeen: serverTimestamp()
   }, { merge: true });
   return { privateKey: kp.privateKey, publicKeyB64: b64(pubRaw) };
@@ -829,6 +870,9 @@ const setView = v => {
 };
 const isFinePointer = () => window.matchMedia("(pointer: fine)").matches;
 function hue(s) { let h = 0; for (let i = 0; i < s.length; i++) h = (h*31 + s.charCodeAt(i)) % 360; return h; }
+function userDisplayName(user, fallback = "User") {
+  return user?.displayName || user?.email || fallback;
+}
 function paintAvatar(el, uid, email, isGroup) {
   if (isGroup) {
     el.classList.add("group");
@@ -836,10 +880,18 @@ function paintAvatar(el, uid, email, isGroup) {
     return;
   }
   el.classList.remove("group");
-  const letter = (email || uid || "?").trim()[0].toUpperCase();
+  const user = usersLive.get(uid);
+  const label = userDisplayName(user, email || uid || "?");
+  const letter = label.trim()[0].toUpperCase();
   const shifted = 200 + (hue(uid || email || "x") % 40);
-  el.textContent = letter;
+  el.innerHTML = "";
   el.style.background = `linear-gradient(135deg, hsl(${shifted},55%,40%), hsl(${shifted+10},55%,28%))`;
+  if (user?.photoURL) {
+    const img = document.createElement("img");
+    img.className = "profile-avatar-img";
+    img.src = user.photoURL; img.alt = "Profile photo";
+    el.appendChild(img);
+  } else el.textContent = letter;
 }
 function addOnlineDot(el) { if (!el.querySelector(".online-dot")) { const d = document.createElement("div"); d.className = "online-dot"; el.appendChild(d); } }
 function removeOnlineDot(el) { const d = el.querySelector(".online-dot"); if (d) d.remove(); }
@@ -887,7 +939,7 @@ function convDisplayName(conv) {
   if (conv.type === "group") return conv.name || "Group";
   if (!me || !Array.isArray(conv.members)) return "Chat";
   const other = conv.members.find(u => u !== me.uid);
-  return usersLive.get(other)?.email || "Chat";
+  return userDisplayName(usersLive.get(other), "Chat");
 }
 
 /* STATE */
@@ -975,7 +1027,16 @@ function openStarred() {
 function subscribeUser(uid) {
   if (userListeners.has(uid)) return;
   const unsub = onSnapshot(doc(db, "users", uid), snap => {
-    if (snap.exists()) { usersLive.set(uid, { uid, ...snap.data() }); refreshOnlineDots(); }
+    if (snap.exists()) {
+      usersLive.set(uid, { uid, ...snap.data() }); refreshOnlineDots();
+      if (me && uid === me.uid) {
+        const u = usersLive.get(uid);
+        $("drawerEmail").textContent = userDisplayName(u, me.email);
+        $("myEmail").textContent = userDisplayName(u, me.email);
+        paintAvatar($("drawerAvatar"), uid, me.email, false);
+      }
+      renderConversations();
+    }
   });
   userListeners.set(uid, unsub);
 }
@@ -1047,9 +1108,11 @@ function startPresence() {
 /* CONVERSATIONS */
 function enterMain() {
   show("s-main"); setView("list");
+  subscribeUser(me.uid);
+  const myProfile = usersLive.get(me.uid);
   paintAvatar($("drawerAvatar"), me.uid, me.email, false);
-  $("drawerEmail").textContent = me.email;
-  $("myEmail").textContent = me.email;
+  $("drawerEmail").textContent = userDisplayName(myProfile, me.email);
+  $("myEmail").textContent = userDisplayName(myProfile, me.email);
   updateStarCount();
   subscribeConversations();
 }
@@ -1074,7 +1137,14 @@ function subscribeConversations() {
 function renderConversations() {
   const box = $("convList"); box.innerHTML = "";
   const empty = $("listEmpty");
-  const filtered = conversations.filter(c => !searchQuery || convDisplayName(c).toLowerCase().includes(searchQuery));
+  const myBlocked = new Set(usersLive.get(me.uid)?.blockedUsers || []);
+  const filtered = conversations.filter(c => {
+    if (c.type === "dm") {
+      const peer = c.members.find(u => u !== me.uid);
+      if (myBlocked.has(peer) || (usersLive.get(peer)?.blockedUsers || []).includes(me.uid)) return false;
+    }
+    return !searchQuery || convDisplayName(c).toLowerCase().includes(searchQuery);
+  });
   if (filtered.length === 0) {
     empty.style.display = "none";
     if (searchQuery) box.innerHTML = `<div class="empty" style="padding:32px 20px"><p>No chats match "${escapeHtml(searchQuery)}"</p></div>`;
@@ -1094,7 +1164,7 @@ function renderConversations() {
     else {
       const other = c.members.find(u => u !== me.uid);
       const ou = usersLive.get(other);
-      name = ou?.email || "Unknown";
+      name = userDisplayName(ou, "Unknown");
       paintAvatar(av, other, name, false);
       av.dataset.onlineUid = other;
       if (ou && isOnline(ou.lastSeen)) addOnlineDot(av);
@@ -1125,7 +1195,7 @@ function renderConversations() {
       preview.textContent = who + " cleared this chat";
     }
     else if (c.lastMessageAt) {
-      const sender = c.lastMessageFrom === me.uid ? "You" : (usersLive.get(c.lastMessageFrom)?.email?.split("@")[0] || "Someone");
+      const sender = c.lastMessageFrom === me.uid ? "You" : (userDisplayName(usersLive.get(c.lastMessageFrom), "Someone"));
       const prefix = c.type === "group" ? sender + ": " : (c.lastMessageFrom === me.uid ? "You: " : "");
       preview.textContent = prefix + "Encrypted message";
     } else preview.textContent = "No messages yet";
@@ -1186,6 +1256,13 @@ async function openConvActionsFromList(convId) {
   }
   currentConvId = convId; currentConv = conv;
   $("menuConvName").textContent = convDisplayName(conv);
+  const isGroup = conv.type === "group";
+  $("menuGroupControls").style.display = isGroup ? "flex" : "none";
+  $("menuBlockUser").style.display = isGroup ? "none" : "flex";
+  if (!isGroup) {
+    const peer = conv.members.find(u => u !== me.uid);
+    $("menuBlockUser").textContent = (usersLive.get(me.uid)?.blockedUsers || []).includes(peer) ? "Unblock user" : "Block user";
+  }
   $("modal-menu").classList.add("active");
 }
 
@@ -1313,7 +1390,7 @@ function listenMessages(conv) {
       if (conv.type === "group" && !mine) {
         const sender = document.createElement("div");
         sender.className = "msg-sender";
-        sender.textContent = usersLive.get(m.from)?.email?.split("@")[0] || "Member";
+        sender.textContent = userDisplayName(usersLive.get(m.from), "Member");
         el.appendChild(sender);
       }
       if (m.replyTo) {
@@ -1421,7 +1498,7 @@ function listenTyping(conv) {
 function renderTyping() {
   const bar = $("typingBar");
   if (typingDocs.size === 0) { bar.innerHTML = ""; return; }
-  const names = [...typingDocs.values()].map(t => usersLive.get(t.uid)?.email?.split("@")[0] || "Someone");
+  const names = [...typingDocs.values()].map(t => userDisplayName(usersLive.get(t.uid), "Someone"));
   bar.textContent = (names.length === 1 ? `${names[0]} is typing` : `${names.length} people are typing`) + " ";
   const dots = document.createElement("span");
   dots.className = "typing-dots";
@@ -1450,6 +1527,13 @@ $("msgInput").addEventListener("keydown", e => { if (e.key === "Enter") send(); 
 async function send() {
   const originalText = $("msgInput").value.trim();
   if (!originalText || !currentConvId || sending) return;
+  if (currentConv?.type === "dm") {
+    const peer = currentConv.members.find(u => u !== me.uid);
+    if ((usersLive.get(me.uid)?.blockedUsers || []).includes(peer) ||
+        (usersLive.get(peer)?.blockedUsers || []).includes(me.uid)) {
+      return toast("Messaging is unavailable because a user is blocked.", true);
+    }
+  }
   sending = true;
   $("btnSend").disabled = true;
   $("btnSend").classList.add("sending");
@@ -1530,7 +1614,7 @@ $("actReply").onclick = () => {
   editTarget = null;
   replyTarget = {
     msgId: actionTarget,
-    whoText: m.from === me.uid ? "You" : (usersLive.get(m.from)?.email?.split("@")[0] || "Message"),
+    whoText: m.from === me.uid ? "You" : (userDisplayName(usersLive.get(m.from), "Message")),
     previewText: m.text || ""
   };
   $("msgInput").placeholder = "Message";
@@ -1557,7 +1641,7 @@ $("actStar").onclick = () => {
   else {
     stars[actionTarget] = {
       convId: currentConvId, text: m.text,
-      from: usersLive.get(m.from)?.email?.split("@")[0] || (m.from === me.uid ? "You" : "someone"),
+      from: userDisplayName(usersLive.get(m.from), m.from === me.uid ? "You" : "someone"),
       at: Date.now()
     };
     toast("Starred");
@@ -1615,6 +1699,13 @@ $("btnCancelReply").onclick = () => {
 /* MENU / MUTE / CLEAR / SAFETY */
 $("btnMenu").onclick = () => {
   $("menuConvName").textContent = convDisplayName(currentConv);
+  const isGroup = currentConv?.type === "group";
+  $("menuGroupControls").style.display = isGroup ? "flex" : "none";
+  $("menuBlockUser").style.display = !isGroup ? "flex" : "none";
+  if (!isGroup) {
+    const peer = currentConv?.members?.find(u => u !== me.uid);
+    $("menuBlockUser").textContent = (usersLive.get(me.uid)?.blockedUsers || []).includes(peer) ? "Unblock user" : "Block user";
+  }
   $("modal-menu").classList.add("active");
 };
 $("btnMute").onclick = async () => {
@@ -1698,8 +1789,16 @@ $("btnNewChat").onclick = async () => {
 };
 async function startDm(peerUid) {
   $("modal-new").classList.remove("active");
+  if ((usersLive.get(me.uid)?.blockedUsers || []).includes(peerUid) ||
+      (usersLive.get(peerUid)?.blockedUsers || []).includes(me.uid)) {
+    return toast("This conversation is unavailable because a user is blocked.", true);
+  }
   try {
     const peerDoc = await getDoc(doc(db, "users", peerUid));
+    if ((usersLive.get(me.uid)?.blockedUsers || []).includes(peerUid) ||
+        (peerDoc.exists() && (peerDoc.data().blockedUsers || []).includes(me.uid))) {
+      return toast("This conversation is unavailable because a user is blocked.", true);
+    }
     if (!peerDoc.exists() || !peerDoc.data().pubKey) {
       return toast("This user hasn't finished setup. Ask them to reopen the app.", true);
     }
@@ -1759,6 +1858,159 @@ $("btnCreateGroup").onclick = async () => {
     $("modal-group").classList.remove("active");
     setTimeout(() => openConversation(ref.id), 500);
   } catch (e) { $("groupErr").textContent = e.message; }
+};
+
+
+/* PROFILE */
+function openProfileEditor() {
+  const u = usersLive.get(me.uid) || {};
+  $("profileName").value = u.displayName || me.email.split("@")[0];
+  $("profilePhoto").value = "";
+  $("profileErr").textContent = "";
+  paintAvatar($("profilePreview"), me.uid, me.email, false);
+  $("modal-profile").classList.add("active");
+}
+$("drawerProfile").onclick = () => { closeDrawer(); setTimeout(openProfileEditor, 180); };
+$("profilePhoto").addEventListener("change", () => {
+  const file = $("profilePhoto").files?.[0];
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  $("profilePreview").innerHTML = "";
+  const img = document.createElement("img"); img.className = "profile-avatar-img"; img.src = url;
+  $("profilePreview").appendChild(img);
+});
+$("btnSaveProfile").onclick = async () => {
+  const name = $("profileName").value.trim();
+  const file = $("profilePhoto").files?.[0];
+  $("profileErr").textContent = "";
+  if (!name) return $("profileErr").textContent = "Enter a display name.";
+  if (name.length > 40) return $("profileErr").textContent = "Name must be 40 characters or fewer.";
+  if (file && !file.type.startsWith("image/")) return $("profileErr").textContent = "Choose an image file.";
+  if (file && file.size > 5 * 1024 * 1024) return $("profileErr").textContent = "Photo must be 5 MB or smaller.";
+  const btn = $("btnSaveProfile"); btn.disabled = true; btn.textContent = "Saving...";
+  try {
+    let photoURL = usersLive.get(me.uid)?.photoURL || "";
+    if (file) {
+      const path = storageRef(storage, `profilePhotos/${me.uid}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`);
+      await uploadBytes(path, file, { contentType: file.type });
+      photoURL = await getDownloadURL(path);
+    }
+    await updateDoc(doc(db, "users", me.uid), { displayName: name, photoURL });
+    const old = usersLive.get(me.uid) || {};
+    usersLive.set(me.uid, { ...old, uid: me.uid, displayName: name, photoURL });
+    $("drawerEmail").textContent = name; $("myEmail").textContent = name;
+    paintAvatar($("drawerAvatar"), me.uid, me.email, false);
+    $("modal-profile").classList.remove("active");
+    renderConversations(); toast("Profile updated");
+  } catch (e) { $("profileErr").textContent = e.message || "Couldn't update profile."; }
+  finally { btn.disabled = false; btn.textContent = "Save profile"; }
+};
+
+/* BLOCK / UNBLOCK */
+$("menuBlockUser").onclick = async () => {
+  const peer = currentConv?.members?.find(u => u !== me.uid);
+  if (!peer) return;
+  const blocked = new Set(usersLive.get(me.uid)?.blockedUsers || []);
+  const wasBlocked = blocked.has(peer);
+  try {
+    await updateDoc(doc(db, "users", me.uid), {
+      blockedUsers: wasBlocked ? arrayRemove(peer) : arrayUnion(peer)
+    });
+    const u = usersLive.get(me.uid) || {};
+    const next = wasBlocked ? [...blocked].filter(x => x !== peer) : [...blocked, peer];
+    usersLive.set(me.uid, { ...u, blockedUsers: next });
+    $("modal-menu").classList.remove("active");
+    if (!wasBlocked) {
+      toast("User blocked. Their chat is hidden from your list.");
+      $("btnBack").click();
+    } else toast("User unblocked");
+    renderConversations();
+  } catch (e) { toast("Couldn't update block list: " + e.message, true); }
+};
+
+/* GROUP ADMIN CONTROLS */
+$("menuGroupControls").onclick = async () => {
+  $("modal-menu").classList.remove("active");
+  if (!currentConv || currentConv.type !== "group") return;
+  const isAdmin = currentConv.createdBy === me.uid || (currentConv.admins || []).includes(me.uid);
+  $("groupAdminTools").style.display = isAdmin ? "block" : "none";
+  $("groupControlSub").textContent = isAdmin ? "As an admin, you can rename the group and manage members." : "You can leave this group. Only admins can change its settings.";
+  $("manageGroupName").value = currentConv.name || "";
+  $("groupAddList").innerHTML = ""; $("groupManageMembers").innerHTML = "";
+  if (isAdmin) {
+    try {
+      const all = await getDocs(collection(db, "users"));
+      all.forEach(d => {
+        if (currentConv.members.includes(d.id)) return;
+        const u = d.data();
+        const row = document.createElement("button"); row.className = "user-pick";
+        const av = document.createElement("div"); av.className = "avatar sm"; paintAvatar(av, d.id, userDisplayName(u), false);
+        const label = document.createElement("div"); label.className = "name"; label.textContent = userDisplayName(u, u.email || "Member");
+        row.append(av, label);
+        row.onclick = async () => {
+          try {
+            await updateDoc(doc(db, "conversations", currentConvId), { members: arrayUnion(d.id) });
+            currentConv.members = [...new Set([...(currentConv.members || []), d.id])];
+            currentPeerUids.push(d.id);
+            if (u.pubKey && myKey) currentPeerKeys[d.id] = await sharedKey(myKey, u.pubKey, me.uid, d.id);
+            subscribeUser(d.id); toast("Member added"); openGroupControlsRefresh();
+          } catch (e) { toast("Couldn't add member: " + e.message, true); }
+        };
+        $("groupAddList").appendChild(row);
+      });
+    } catch (e) { toast("Couldn't load users: " + e.message, true); }
+  }
+  (currentConv.members || []).forEach(uid => {
+    const u = usersLive.get(uid) || {};
+    const row = document.createElement("div"); row.className = "user-pick";
+    const av = document.createElement("div"); av.className = "avatar sm"; paintAvatar(av, uid, userDisplayName(u, u.email || "Member"), false);
+    const label = document.createElement("div"); label.className = "name"; label.textContent = userDisplayName(u, uid === me.uid ? "You" : "Member") + (uid === currentConv.createdBy ? " · Creator" : "");
+    row.append(av, label);
+    if (isAdmin && uid !== me.uid && uid !== currentConv.createdBy) {
+      const remove = document.createElement("button"); remove.className = "icon-btn"; remove.textContent = "×"; remove.title = "Remove member";
+      remove.onclick = async e => {
+        e.stopPropagation();
+        if (!confirm("Remove this member from the group?")) return;
+        try {
+          await updateDoc(doc(db, "conversations", currentConvId), { members: arrayRemove(uid) });
+          currentConv.members = currentConv.members.filter(x => x !== uid);
+          currentPeerUids = currentPeerUids.filter(x => x !== uid); delete currentPeerKeys[uid];
+          toast("Member removed"); openGroupControlsRefresh();
+        } catch (err) { toast("Couldn't remove member: " + err.message, true); }
+      };
+      row.appendChild(remove);
+    }
+    $("groupManageMembers").appendChild(row);
+  });
+  $("modal-group-controls").classList.add("active");
+};
+function openGroupControlsRefresh() {
+  $("modal-group-controls").classList.remove("active");
+  $("menuGroupControls").click();
+}
+$("btnRenameGroup").onclick = async () => {
+  const name = $("manageGroupName").value.trim();
+  if (!name) return toast("Enter a group name.", true);
+  if (!currentConv || currentConv.createdBy !== me.uid && !(currentConv.admins || []).includes(me.uid)) return toast("Only group admins can rename this group.", true);
+  try {
+    await updateDoc(doc(db, "conversations", currentConvId), { name });
+    currentConv.name = name; $("convTitle").textContent = name; $("menuConvName").textContent = name;
+    toast("Group name updated"); renderConversations();
+  } catch (e) { toast("Couldn't rename group: " + e.message, true); }
+};
+$("btnLeaveGroup").onclick = async () => {
+  if (!currentConv || currentConv.type !== "group") return;
+  if (!confirm("Leave this group?")) return;
+  try {
+    const remaining = (currentConv.members || []).filter(uid => uid !== me.uid);
+    const changes = { members: arrayRemove(me.uid) };
+    if (currentConv.createdBy === me.uid && remaining.length) {
+      changes.admins = arrayUnion(remaining[0]);
+    }
+    await updateDoc(doc(db, "conversations", currentConvId), changes);
+    $("modal-group-controls").classList.remove("active");
+    $("btnBack").click(); toast("You left the group");
+  } catch (e) { toast("Couldn't leave group: " + e.message, true); }
 };
 
 /* SETTINGS */
