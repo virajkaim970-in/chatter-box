@@ -1381,7 +1381,9 @@ async function openConversation(convId) {
     }
   } catch (e) { toast("Key error: " + e.message, true); }
   const hasKeys = currentPeerUids.length > 0;
-  $("msgInput").disabled = $("btnSend").disabled = !hasKeys;
+  $("msgInput").disabled = !hasKeys;
+$("btnSend").disabled = !hasKeys;
+$("btnChatPhoto").disabled = !hasKeys || sendingPhoto;
   if (!hasKeys) toast("Cannot load peer keys. Reopen the app.", true);
   $("replyBar").classList.remove("active");
   $("msgInput").value = getDraft(convId);
