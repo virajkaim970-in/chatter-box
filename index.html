@@ -455,6 +455,10 @@ border:1px solid var(--bd2);text-align:center;font-weight:700;}
 .scroll-down{bottom:56px;}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;
 animation-iteration-count:1!important;transition-duration:.01ms!important;}}
+
+.msg-photo{display:block;max-width:min( min(68vw, 300px), 100%);max-height:360px;object-fit:contain;border-radius:10px;margin:2px 0 6px;background:rgba(0,0,0,.08)}
+.photo-download{display:inline-flex;align-items:center;gap:5px;margin-top:5px;padding:5px 9px;border:1px solid var(--bd);border-radius:8px;background:var(--s2);color:var(--tx);font-size:12px;cursor:pointer}
+
 </style>
 </head>
 <body data-theme="dark">
@@ -507,6 +511,12 @@ animation-iteration-count:1!important;transition-duration:.01ms!important;}}
         <h1>Chatter Box</h1>
         <p>Private messaging. End-to-end encrypted.</p>
       </div>
+      <div class="field"><label>Display name <strong>(required)</strong></label>
+        <input id="signupName" type="text" maxlength="40" placeholder="Your name" autocomplete="name"/></div>
+      <div class="field"><label>Profile photo <strong>(required)</strong></label>
+        <input id="signupPhoto" type="file" accept="image/*" style="display:block;width:100%;margin-top:8px;font-size:12px"/>
+        <div id="signupPhotoPreview" class="avatar lg" style="margin-top:10px">?</div>
+        <small>Choose a photo. It will be compressed and stored in Firestore (maximum 100 KB).</small></div>
       <div class="field"><label>Email</label>
         <input id="email" type="email" placeholder="you@example.com" autocomplete="email"/></div>
       <div class="field"><label>Password</label>
@@ -594,6 +604,8 @@ animation-iteration-count:1!important;transition-duration:.01ms!important;}}
         <button class="reply-close" id="btnCancelReply"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
       </div>
       <div class="composer">
+        <input id="chatPhotoInput" type="file" accept="image/*" hidden />
+        <button id="btnChatPhoto" class="icon-btn" type="button" title="Send photo" aria-label="Send photo" disabled>＋</button>
         <input id="msgInput" placeholder="Message" disabled autocomplete="off"/>
         <button id="btnSend" class="send-btn" disabled>
           <svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
@@ -663,6 +675,7 @@ animation-iteration-count:1!important;transition-duration:.01ms!important;}}
       <button class="menu-item" id="actReply"><svg viewBox="0 0 24 24"><path d="M9 17l-5-5 5-5"/><path d="M20 18v-2a4 4 0 00-4-4H4"/></svg>Reply</button>
       <button class="menu-item" id="actCopy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copy</button>
       <button class="menu-item" id="actStar"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg>Star</button>
+      <button class="menu-item" id="actPin">📌 Pin message</button>
       <button class="menu-item" id="actEdit"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit</button>
       <button class="menu-item danger" id="actDeleteMe"><svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>Delete for me</button>
       <button class="menu-item danger" id="actDeleteAll"><svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>Delete for everyone</button>
@@ -705,6 +718,8 @@ animation-iteration-count:1!important;transition-duration:.01ms!important;}}
           <div class="toggle-desc">Switch between dark and light</div></div>
         <div class="toggle on" id="toggleTheme"></div>
       </div>
+      <button class="menu-item" id="btnExportBackup" style="margin-top:12px;background:var(--s2)">Export local backup<span class="menu-sub">Save your starred messages and drafts from this device</span></button>
+      <button class="menu-item" id="btnAppStats" style="margin-top:8px;background:var(--s2)">App statistics<span class="menu-sub">View your chat and message counts</span></button>
       <button class="menu-item" id="btnOpenPassword" style="margin-top:12px;background:var(--s2)">
         <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
         <div>Change password<span class="menu-sub">Re-encrypts your vault key</span></div></button>
@@ -767,7 +782,6 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
 import { getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, collection, addDoc,
          query, where, orderBy, limit, onSnapshot, serverTimestamp, getDocs,
          writeBatch, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, getBytes } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCe6Q8aExpgyabRv29v9_j8Pho2eGQyl4Q",
@@ -780,7 +794,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const storage = getStorage(app);
 
 /* SPLASH */
 const splashStart = Date.now();
@@ -812,7 +825,37 @@ async function deriveKek(pw, salt, iter) {
   return crypto.subtle.deriveKey({ name:"PBKDF2", salt, iterations:iter, hash:"SHA-256" },
     base, { name:"AES-GCM", length:256 }, false, ["encrypt","decrypt"]);
 }
-async function createIdentity(uid, email, password) {
+async function compressProfilePhoto(file, maxBytes = 100 * 1024) {
+  if (!file || !file.type.startsWith("image/")) throw new Error("Choose a valid image file.");
+  if (file.size > 10 * 1024 * 1024) throw new Error("Choose an image smaller than 10 MB.");
+  const image = await new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("This image could not be opened.")); };
+    img.src = url;
+  });
+  const canvas = document.createElement("canvas");
+  const scale = Math.min(1, 512 / Math.max(image.width, image.height));
+  canvas.width = Math.max(1, Math.round(image.width * scale));
+  canvas.height = Math.max(1, Math.round(image.height * scale));
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+  let quality = 0.82, data = canvas.toDataURL("image/jpeg", quality);
+  while (data.length * 0.75 > maxBytes && quality > 0.35) {
+    quality -= 0.08; data = canvas.toDataURL("image/jpeg", quality);
+  }
+  while (data.length * 0.75 > maxBytes && canvas.width > 160) {
+    canvas.width = Math.round(canvas.width * 0.8);
+    canvas.height = Math.round(canvas.height * 0.8);
+    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+    data = canvas.toDataURL("image/jpeg", 0.5);
+  }
+  if (data.length * 0.75 > maxBytes) throw new Error("This photo cannot be compressed enough. Please choose another photo.");
+  return data;
+}
+
+async function createIdentity(uid, email, password, displayName, photoURL) {
   const kp = await crypto.subtle.generateKey({ name:"ECDH", namedCurve:"P-256" }, true, ["deriveBits"]);
   const pubRaw = await crypto.subtle.exportKey("raw", kp.publicKey);
   const privPkcs8 = await crypto.subtle.exportKey("pkcs8", kp.privateKey);
@@ -820,7 +863,7 @@ async function createIdentity(uid, email, password) {
   const kek = await deriveKek(password, salt, ITER);
   const wrapped = await crypto.subtle.encrypt({ name:"AES-GCM", iv }, kek, privPkcs8);
   await setDoc(doc(db, "users", uid), {
-    email, displayName: email.split("@")[0], photoURL: "",
+    email, displayName, photoURL,
     pubKey: b64(pubRaw), encPrivKey: b64(wrapped), privIv: b64(iv),
     kdfSalt: b64(salt), kdfIter: ITER, lastSeen: serverTimestamp()
   }, { merge: true });
@@ -953,7 +996,7 @@ let currentPeerKeys = {}, currentPeerUids = [];
 let msgListener = null, typingListener = null, convDocListener = null;
 let typingDocs = new Map(), lastTypingWrite = 0, lastTypingDocWrite = 0, typingRefreshInterval = null;
 let lastReadWrite = 0, presenceInterval = null, presenceListenerAdded = false;
-let sending = false, replyTarget = null, editTarget = null, actionTarget = null;
+let sending = false, sendingPhoto = false, replyTarget = null, editTarget = null, actionTarget = null;
 let msgCache = new Map(), searchQuery = "";
 let openingConversation = false;
 const EMOJIS = ["👍","❤️","😂","😮","😢","🔥"];
@@ -1051,19 +1094,39 @@ function refreshOnlineDots() {
 }
 
 /* AUTH */
+$("signupPhoto").addEventListener("change", () => {
+  const file = $("signupPhoto").files?.[0];
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  $("signupPhotoPreview").innerHTML = "";
+  const img = document.createElement("img"); img.className = "profile-avatar-img"; img.src = url;
+  img.onload = () => URL.revokeObjectURL(url);
+  $("signupPhotoPreview").appendChild(img);
+});
 $("btnSignup").onclick = async () => {
   const email = $("email").value.trim(), pw = $("password").value;
+  const displayName = $("signupName").value.trim();
+  const photoFile = $("signupPhoto").files?.[0];
   $("authErr").textContent = "";
+  if (!displayName) return $("authErr").textContent = "Enter your display name.";
+  if (displayName.length > 40) return $("authErr").textContent = "Name must be 40 characters or fewer.";
+  if (!photoFile) return $("authErr").textContent = "Choose a profile photo to create your account.";
   if (pw.length < 8) return $("authErr").textContent = "Password must be at least 8 characters.";
   if (!email.includes("@")) return $("authErr").textContent = "Enter a valid email.";
+  const btn = $("btnSignup"); btn.disabled = true; btn.textContent = "Preparing account...";
   try {
+    const photoURL = await compressProfilePhoto(photoFile);
+    btn.textContent = "Creating account...";
     const cred = await createUserWithEmailAndPassword(auth, email, pw);
-    const id = await createIdentity(cred.user.uid, email, pw);
+    const id = await createIdentity(cred.user.uid, email, pw, displayName, photoURL);
     myKey = id.privateKey; me.pubKey = id.publicKeyB64;
-    const s = await getDoc(doc(db, "users", cred.user.uid));
-    usersLive.set(cred.user.uid, { uid: cred.user.uid, ...s.data() });
+    const snap = await getDoc(doc(db, "users", cred.user.uid));
+    usersLive.set(cred.user.uid, { uid: cred.user.uid, ...snap.data() });
     enterMain(); startPresence();
-  } catch (e) { $("authErr").textContent = e.message; }
+  } catch (e) {
+    console.error("Signup failed:", e);
+    $("authErr").textContent = e?.message || "Account creation failed. Please try again.";
+  } finally { btn.disabled = false; btn.textContent = "Create account"; }
 };
 $("btnLogin").onclick = async () => {
   $("authErr").textContent = "";
@@ -1390,7 +1453,9 @@ function listenMessages(conv) {
       if (!key) { msgCache.set(d.id, { from: m.from, text: "[no key]", failed: true, _ver: ver }); continue; }
       try {
         const text = await decText(key, myCt.iv, myCt.ct);
-        msgCache.set(d.id, { from: m.from, text, _ver: ver });
+        msgCache.set(d.id, m.type === "image"
+          ? { from: m.from, text: "Photo", imageData: text, _ver: ver }
+          : { from: m.from, text, _ver: ver });
       } catch {
         msgCache.set(d.id, { from: m.from, text: "[cannot decrypt]", failed: true, _ver: ver });
       }
@@ -1438,7 +1503,18 @@ function listenMessages(conv) {
       const bubble = document.createElement("div");
       bubble.className = "bubble";
       if (m.deletedForEveryone) bubble.textContent = "This message was deleted";
-      else bubble.textContent = cached.text;
+      else if (m.type === "image" && cached.imageData) {
+        const img = document.createElement("img");
+        img.className = "msg-photo"; img.src = cached.imageData; img.alt = "Shared photo";
+        bubble.appendChild(img);
+        const dl = document.createElement("button");
+        dl.type = "button"; dl.className = "photo-download"; dl.textContent = "Download photo";
+        dl.addEventListener("click", () => {
+          const a = document.createElement("a"); a.href = cached.imageData;
+          a.download = `chatter-box-photo-${d.id}.jpg`; document.body.appendChild(a); a.click(); a.remove();
+        });
+        bubble.appendChild(dl);
+      } else bubble.textContent = cached.text;
       el.appendChild(bubble);
       if (m.reactions && Object.keys(m.reactions).length) {
         const rr = document.createElement("div");
@@ -1553,6 +1629,95 @@ $("msgInput").addEventListener("input", () => {
   }
 });
 
+/* CHAT PHOTO SENDING: compressed and end-to-end encrypted in Firestore (no Storage). */
+async function compressChatPhoto(file, maxBytes = 100 * 1024) {
+  if (!file || !file.type.startsWith("image/")) throw new Error("Choose an image file.");
+  if (file.size > 10 * 1024 * 1024) throw new Error("Choose a photo smaller than 10 MB.");
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = () => reject(new Error("This photo could not be opened."));
+      image.src = url;
+    });
+    const canvas = document.createElement("canvas");
+    let scale = Math.min(1, 900 / Math.max(img.width, img.height));
+    canvas.width = Math.max(1, Math.round(img.width * scale));
+    canvas.height = Math.max(1, Math.round(img.height * scale));
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    let data = canvas.toDataURL("image/jpeg", 0.78);
+    for (let q = 0.70; data.length * 0.75 > maxBytes && q >= 0.30; q -= 0.08) {
+      data = canvas.toDataURL("image/jpeg", q);
+    }
+    while (data.length * 0.75 > maxBytes && canvas.width > 240) {
+      const w = Math.round(canvas.width * 0.8), h = Math.round(canvas.height * 0.8);
+      canvas.width = w; canvas.height = h;
+      ctx.drawImage(img, 0, 0, w, h);
+      data = canvas.toDataURL("image/jpeg", 0.42);
+    }
+    if (data.length * 0.75 > maxBytes) throw new Error("Could not compress this photo below 100 KB. Try another image.");
+    return data;
+  } finally { URL.revokeObjectURL(url); }
+}
+$("btnChatPhoto").onclick = () => $("chatPhotoInput").click();
+$("chatPhotoInput").addEventListener("change", async () => {
+  const file = $("chatPhotoInput").files?.[0];
+  if (!file) return;
+  if (sendingPhoto || sending) {
+    $("chatPhotoInput").value = "";
+    return toast("Please wait for the current message to finish sending.", true);
+  }
+  const convId = currentConvId, conv = currentConv;
+  const peers = [...currentPeerUids], keys = { ...currentPeerKeys };
+  const btn = $("btnChatPhoto");
+  sendingPhoto = true;
+  btn.disabled = true;
+  let photoSaved = false;
+  try {
+    if (!me || !convId || !conv || !peers.length) throw new Error("Open a chat first.");
+    if (conv.type === "dm") {
+      const peer = conv.members.find(u => u !== me.uid);
+      if (!peer || (usersLive.get(me.uid)?.blockedUsers || []).includes(peer) ||
+          (usersLive.get(peer)?.blockedUsers || []).includes(me.uid)) {
+        throw new Error("Messaging is unavailable because a user is blocked.");
+      }
+    }
+    const dataUrl = await compressChatPhoto(file);
+    const encs = {};
+    for (const uid of peers) {
+      if (!keys[uid]) throw new Error("Encryption key missing for a chat member. Please reopen the chat.");
+      encs[uid] = await encText(keys[uid], dataUrl);
+    }
+    const firstPeer = peers[0];
+    encs[me.uid] = await encText(keys[firstPeer], dataUrl);
+    await addDoc(collection(db, "conversations", convId, "messages"), {
+      from: me.uid,
+      to: conv.type === "dm" ? conv.members.find(u => u !== me.uid) : null,
+      type: "image", iv: encs[firstPeer].iv, ct: encs[firstPeer].ct,
+      encFor: encs, selfKeyUid: firstPeer, replyTo: null,
+      reactions: {}, editedAt: null, deletedFor: [], deletedForEveryone: false,
+      createdAt: serverTimestamp()
+    });
+    photoSaved = true;
+    await updateDoc(doc(db, "conversations", convId), {
+      lastMessageAt: serverTimestamp(), lastMessageFrom: me.uid, lastMessageType: "image",
+      clearedAt: null, clearedBy: null, clearedByName: null,
+      [`lastReadAt.${me.uid}`]: serverTimestamp()
+    });
+    toast("Photo sent");
+  } catch (e) {
+    if (photoSaved) toast("Photo sent, but the chat preview could not refresh.", true);
+    else toast("Photo not sent: " + (e?.message || "Unknown error"), true);
+  }
+  finally {
+    sendingPhoto = false;
+    btn.disabled = !currentConvId || currentPeerUids.length === 0;
+    $("chatPhotoInput").value = "";
+  }
+});
+
 /* SEND */
 $("btnSend").onclick = send;
 $("msgInput").addEventListener("keydown", e => { if (e.key === "Enter") send(); });
@@ -1635,6 +1800,7 @@ async function send() {
   } finally {
     sending = false;
     $("btnSend").disabled = !currentConvId || currentPeerUids.length === 0;
+    $("btnChatPhoto").disabled = !currentConvId || currentPeerUids.length === 0;
     $("btnSend").classList.remove("sending");
     if (currentConvId && isFinePointer()) $("msgInput").focus();
   }
@@ -1688,6 +1854,21 @@ $("actCopy").onclick = async () => {
   if (!m?.text) return;
   try { await navigator.clipboard.writeText(m.text); toast("Copied to clipboard"); }
   catch { toast("Copy failed", true); }
+};
+$("actPin").onclick = async () => {
+  const id = actionTarget;
+  $("modal-msgact").classList.remove("active");
+  if (!id || !currentConvId) return;
+  try {
+    const convRef = doc(db, "conversations", currentConvId);
+    const snap = await getDoc(convRef);
+    if (!snap.exists()) throw new Error("This conversation no longer exists.");
+    const pins = snap.data().pinnedMessageIds || [];
+    const alreadyPinned = pins.includes(id);
+    await updateDoc(convRef, { pinnedMessageIds: alreadyPinned ? arrayRemove(id) : arrayUnion(id) });
+    if (currentConv) currentConv.pinnedMessageIds = alreadyPinned ? pins.filter(x => x !== id) : [...pins, id];
+    toast(alreadyPinned ? "Message unpinned" : "Message pinned");
+  } catch (e) { toast("Couldn't update pinned message: " + e.message, true); }
 };
 $("actStar").onclick = () => {
   const m = msgCache.get(actionTarget);
@@ -1889,7 +2070,9 @@ $("btnNewGroup").onclick = () => {
   const box = $("groupMembers"); box.innerHTML = "";
   const selected = new Set();
   window._groupSelected = selected;
+  box.innerHTML = `<div class="empty" style="padding:18px"><p>Loading members…</p></div>`;
   getDocs(collection(db, "users")).then(snap => {
+    box.innerHTML = "";
     snap.forEach(d => {
       if (d.id === me.uid) return;
       const u = d.data();
@@ -1915,22 +2098,54 @@ $("btnNewGroup").onclick = () => {
     toast("Couldn't load group members: " + e.message, true);
   });
 };
+let creatingGroup = false;
 $("btnCreateGroup").onclick = async () => {
+  if (creatingGroup) return;
   const name = $("groupName").value.trim();
-  const selected = window._groupSelected || new Set();
-  $("groupErr").textContent = "";
-  if (!name) return $("groupErr").textContent = "Enter a group name.";
-  if (selected.size < 1) return $("groupErr").textContent = "Pick at least one member.";
+  const selected = window._groupSelected instanceof Set ? [...window._groupSelected] : [];
+  const err = $("groupErr");
+  const button = $("btnCreateGroup");
+  err.textContent = "";
+  if (!me?.uid) { err.textContent = "Please sign in again."; return; }
+  if (!name) { err.textContent = "Enter a group name."; return; }
+  if (name.length > 40) { err.textContent = "Group name must be 40 characters or fewer."; return; }
+  if (!selected.length) { err.textContent = "Pick at least one member."; return; }
+  if (selected.includes(me.uid)) { err.textContent = "You are already included as the group creator."; return; }
+  creatingGroup = true;
+  button.disabled = true;
+  button.textContent = "Creating…";
   try {
+    // Confirm every selected account still exists and has a public key before writing.
+    const memberDocs = await Promise.all(selected.map(uid => getDoc(doc(db, "users", uid))));
+    const invalid = memberDocs.findIndex(snap => !snap.exists() || !snap.data()?.pubKey);
+    if (invalid !== -1) throw new Error("One selected member has not completed account setup. Remove them and try again.");
+    const members = [...new Set([me.uid, ...selected])];
     const ref = await addDoc(collection(db, "conversations"), {
-      type: "group", name, members: [me.uid, ...selected], keyParticipants: [me.uid, ...selected],
-      createdAt: serverTimestamp(), createdBy: me.uid
+      type: "group", name, members, keyParticipants: members,
+      admins: [me.uid], createdAt: serverTimestamp(), createdBy: me.uid,
+      lastMessageAt: null, lastMessageFrom: null, lastMessageType: null,
+      muted: {}, lastReadAt: { [me.uid]: serverTimestamp() }
     });
-    $("modal-group").classList.remove("active");
-    const createdConv = { id: ref.id, type: "group", name, members: [me.uid, ...selected], keyParticipants: [me.uid, ...selected], createdBy: me.uid };
+    const createdConv = { id: ref.id, type: "group", name, members, keyParticipants: members, admins: [me.uid], createdBy: me.uid };
     conversations = [...conversations.filter(c => c.id !== ref.id), createdConv];
-    openConversation(ref.id);
-  } catch (e) { $("groupErr").textContent = e.message; }
+    $("modal-group").classList.remove("active");
+    await openConversation(ref.id);
+    toast("Group created");
+  } catch (e) {
+    console.error("Group creation failed:", e);
+    const code = e?.code || "";
+    if (code === "permission-denied" || /missing or insufficient permissions/i.test(e?.message || "")) {
+      err.textContent = "Firebase blocked group creation. Your Firestore Rules must allow a signed-in user to create a conversation with themselves as creator/admin and members including their own UID. Update Firestore Rules; HTML changes alone cannot grant this permission.";
+    } else if (code === "unavailable" || /network/i.test(e?.message || "")) {
+      err.textContent = "Network/Firebase connection problem. Check your internet and try again.";
+    } else {
+      err.textContent = e?.message || "Couldn't create the group. Please try again.";
+    }
+  } finally {
+    creatingGroup = false;
+    button.disabled = false;
+    button.textContent = "Create group";
+  }
 };
 
 
@@ -1941,6 +2156,7 @@ function openProfileEditor() {
   $("profilePhoto").value = "";
   $("profileErr").textContent = "";
   paintAvatar($("profilePreview"), me.uid, me.email, false);
+  if (u.photoURL) { const img = document.createElement("img"); img.className = "profile-avatar-img"; img.src = u.photoURL; $("profilePreview").replaceChildren(img); }
   $("modal-profile").classList.add("active");
 }
 $("drawerProfile").onclick = () => { closeDrawer(); setTimeout(openProfileEditor, 180); };
@@ -1969,19 +2185,24 @@ $("btnSaveProfile").onclick = async () => {
   ]);
   try {
     if (!me?.uid) throw new Error("You are not signed in. Please sign in again.");
-    let photoURL = usersLive.get(me.uid)?.photoURL || "";
-    if (file) {
-      const path = storageRef(storage, `profilePhotos/${me.uid}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`);
-      await withTimeout(uploadBytes(path, file, { contentType: file.type }), "Photo upload");
-      photoURL = await withTimeout(getDownloadURL(path), "Photo URL request");
-    }
-    await withTimeout(updateDoc(doc(db, "users", me.uid), { displayName: name, photoURL }), "Profile save");
+
+    // Save the display name independently so a Storage upload failure cannot
+    // prevent the name from being saved or leave the form in a false loading state.
     const old = usersLive.get(me.uid) || {};
+    let photoURL = old.photoURL || "";
+    await withTimeout(updateDoc(doc(db, "users", me.uid), { displayName: name }), "Name save");
     usersLive.set(me.uid, { ...old, uid: me.uid, displayName: name, photoURL });
     $("drawerEmail").textContent = name; $("myEmail").textContent = name;
+
+    if (file) {
+      photoURL = await withTimeout(compressProfilePhoto(file), "Photo compression");
+      await withTimeout(updateDoc(doc(db, "users", me.uid), { photoURL }), "Photo save");
+      usersLive.set(me.uid, { ...usersLive.get(me.uid), photoURL });
+    }
+
     paintAvatar($("drawerAvatar"), me.uid, me.email, false);
     $("modal-profile").classList.remove("active");
-    renderConversations(); toast("Profile updated");
+    renderConversations(); toast(file ? "Name and profile photo updated" : "Profile name updated");
   } catch (e) {
     $("profileErr").textContent = e?.message || "Couldn't update profile. Please try again.";
   } finally {
@@ -2054,6 +2275,27 @@ $("menuGroupControls").onclick = async () => {
     const label = document.createElement("div"); label.className = "name"; label.textContent = userDisplayName(u, uid === me.uid ? "You" : "Member") + (uid === currentConv.createdBy ? " · Creator" : "");
     row.append(av, label);
     if (isAdmin && uid !== me.uid && uid !== currentConv.createdBy) {
+      const adminBtn = document.createElement("button");
+      adminBtn.className = "btn btn-ghost";
+      adminBtn.style.cssText = "width:auto;padding:7px 9px;margin-left:auto;font-size:11px";
+      const isMemberAdmin = (currentConv.admins || []).includes(uid);
+      adminBtn.textContent = isMemberAdmin ? "Remove admin" : "Make admin";
+      adminBtn.onclick = async e => {
+        e.stopPropagation();
+        try {
+          await updateDoc(doc(db, "conversations", currentConvId), {
+            admins: isMemberAdmin ? arrayRemove(uid) : arrayUnion(uid)
+          });
+          currentConv.admins = isMemberAdmin
+            ? (currentConv.admins || []).filter(x => x !== uid)
+            : [...new Set([...(currentConv.admins || []), uid])];
+          toast(isMemberAdmin ? "Admin role removed" : "Member promoted to admin");
+          openGroupControlsRefresh();
+        } catch (e2) { toast("Couldn't update admin role: " + e2.message, true); }
+      };
+      row.appendChild(adminBtn);
+    }
+    if (isAdmin && uid !== me.uid && uid !== currentConv.createdBy) {
       const remove = document.createElement("button"); remove.className = "icon-btn"; remove.textContent = "×"; remove.title = "Remove member";
       remove.onclick = async e => {
         e.stopPropagation();
@@ -2111,6 +2353,35 @@ $("toggleTheme").onclick = () => {
   document.body.setAttribute("data-theme", next);
   localStorage.setItem("theme", next);
   $("toggleTheme").classList.toggle("on", next === "dark");
+};
+
+/* LOCAL BACKUP + BASIC STATISTICS */
+$("btnExportBackup").onclick = () => {
+  try {
+    const payload = {
+      app: "Chatter Box local backup",
+      exportedAt: new Date().toISOString(),
+      note: "This backup contains device-local starred messages and drafts only. It does not include Firebase conversations or encryption keys.",
+      starred: getStars(),
+      drafts: Object.fromEntries(Object.keys(localStorage).filter(k => k.startsWith("draft_")).map(k => [k, localStorage.getItem(k)])),
+      theme: localStorage.getItem("theme") || "dark"
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = `chatter-box-local-backup-${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    toast("Local backup downloaded");
+  } catch (e) { toast("Backup failed: " + e.message, true); }
+};
+$("btnAppStats").onclick = () => {
+  const totalChats = conversations.length;
+  const groups = conversations.filter(c => c.type === "group").length;
+  const direct = totalChats - groups;
+  const starred = Object.keys(getStars()).length;
+  const cachedMessages = msgCache.size;
+  alert(`Chatter Box statistics\n\nChats: ${totalChats}\nGroups: ${groups}\nDirect chats: ${direct}\nStarred messages on this device: ${starred}\nMessages currently cached in the open chat: ${cachedMessages}\n\nCounts are approximate and limited to data currently loaded on this device.`);
 };
 
 /* PASSWORD CHANGE */
