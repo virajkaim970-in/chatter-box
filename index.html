@@ -1125,7 +1125,9 @@ $("btnSignup").onclick = async () => {
     enterMain(); startPresence();
   } catch (e) {
     console.error("Signup failed:", e);
-    $("authErr").textContent = e?.message || "Account creation failed. Please try again.";
+    $("authErr").textContent = e?.code === "permission-denied"
+      ? "Firebase blocked profile setup. Check the Firestore user create rules, then sign in again if the account was already created."
+      : (e?.message || "Account creation failed. Please try again.");
   } finally { btn.disabled = false; btn.textContent = "Create account"; }
 };
 $("btnLogin").onclick = async () => {
@@ -1151,6 +1153,9 @@ onAuthStateChanged(auth, async user => {
     if (typingRefreshInterval) clearInterval(typingRefreshInterval);
     typingRefreshInterval = null; typingDocs.clear();
     if (presenceInterval) { clearInterval(presenceInterval); presenceInterval = null; }
+    userListeners.forEach(unsub => { try { unsub(); } catch {} });
+    userListeners.clear(); usersLive.clear(); conversations = [];
+    currentPeerKeys = {}; currentPeerUids = []; msgCache.clear();
     closeDrawer(); show("s-auth"); hideSplash(); return;
   }
   me = { uid: user.uid, email: user.email || user.uid, pubKey: me?.pubKey || null };
@@ -1200,6 +1205,11 @@ function subscribeConversations() {
       return tb - ta;
     });
     renderConversations();
+  }, err => {
+    console.error("Conversation list listener failed:", err);
+    toast(err?.code === "permission-denied"
+      ? "Firebase denied access to your chats. Check the conversation read rules."
+      : "Couldn't load chats. Check your connection and try again.", true);
   });
 }
 function renderConversations() {
@@ -1414,6 +1424,9 @@ function listenConvDoc(convId) {
     if (currentConvId === convId) currentConv = fresh;
     const idx = conversations.findIndex(c => c.id === convId);
     if (idx >= 0) conversations[idx] = fresh;
+  }, err => {
+    console.error("Conversation detail listener failed:", err);
+    if (currentConvId === convId) toast("Couldn't refresh this chat: " + (err?.message || "permission denied"), true);
   });
 }
 
@@ -1564,6 +1577,11 @@ function listenMessages(conv) {
     box.scrollTop = box.scrollHeight;
     if (!wasAtBottom) updateScrollButton();
     updateLastRead();
+  }, err => {
+    console.error("Message listener failed:", err);
+    if (currentConvId === conv.id) {
+      $("messages").innerHTML = `<div class="empty"><h3>Couldn't load messages</h3><p>${escapeHtml(err?.code === "permission-denied" ? "Firebase denied access. Check the message read rules." : "Check your connection and try again.")}</p></div>`;
+    }
   });
 }
 function isAtBottom() {
@@ -1597,6 +1615,9 @@ function listenTyping(conv) {
       if (t.uid !== me.uid && t.at && Date.now() - t.at.toMillis() < 6000) typingDocs.set(d.id, t);
     });
     renderTyping();
+  }, err => {
+    console.error("Typing listener failed:", err);
+    typingDocs.clear(); renderTyping();
   });
 }
 function renderTyping() {
@@ -2020,7 +2041,7 @@ $("btnNewChat").onclick = async () => {
     const av = document.createElement("div");
     av.className = "avatar sm"; paintAvatar(av, u.id, u.email, false);
     const n = document.createElement("div");
-    n.className = "name"; n.textContent = u.email || u.id;
+    n.className = "name"; n.textContent = u.displayName || u.email || u.id;
     b.append(av, n);
     b.onclick = () => startDm(u.id);
     box.appendChild(b);
@@ -2081,7 +2102,7 @@ $("btnNewGroup").onclick = () => {
       const av = document.createElement("div");
       av.className = "avatar sm"; paintAvatar(av, d.id, u.email, false);
       const n = document.createElement("div");
-      n.className = "name"; n.textContent = u.email || d.id;
+      n.className = "name"; n.textContent = u.displayName || u.email || d.id;
       const chk = document.createElement("div");
       chk.className = "check";
       chk.innerHTML = `<svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>`;
@@ -2110,6 +2131,7 @@ $("btnCreateGroup").onclick = async () => {
   if (!name) { err.textContent = "Enter a group name."; return; }
   if (name.length > 40) { err.textContent = "Group name must be 40 characters or fewer."; return; }
   if (!selected.length) { err.textContent = "Pick at least one member."; return; }
+  if (selected.length > 99) { err.textContent = "A group can have at most 100 members, including you."; return; }
   if (selected.includes(me.uid)) { err.textContent = "You are already included as the group creator."; return; }
   creatingGroup = true;
   button.disabled = true;
@@ -2254,6 +2276,7 @@ $("menuGroupControls").onclick = async () => {
         row.append(av, label);
         row.onclick = async () => {
           try {
+            if ((currentConv.members || []).length >= 100) throw new Error("This group has reached the 100-member limit.");
             await updateDoc(doc(db, "conversations", currentConvId), {
               members: arrayUnion(d.id),
               keyParticipants: arrayUnion(...(currentConv.keyParticipants || currentConv.members || []), d.id)
