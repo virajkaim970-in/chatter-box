@@ -337,6 +337,8 @@ background:var(--glass);backdrop-filter:blur(20px) saturate(160%);-webkit-backdr
 border-top:1px solid var(--bd);align-items:flex-end;flex-shrink:0;position:relative;z-index:5;}
 .composer::before{content:'';position:absolute;top:-1px;left:0;right:0;height:1px;
 background:linear-gradient(90deg,transparent,rgba(14,165,233,.4),transparent);}
+.composer .icon-btn{width:40px;height:44px;flex-shrink:0;background:var(--s2);border:1px solid var(--bd2);}
+.composer .icon-btn svg{width:18px;height:18px;}
 .composer input{flex:1;padding:11px 16px;background:var(--s2);border:1px solid var(--bd2);border-radius:10px;
 color:var(--tx);outline:none;transition:border-color .2s;min-width:0;
 -webkit-user-select:text;user-select:text;font-size:14px;box-shadow:inset 0 1px 2px rgba(0,0,0,.15);}
@@ -765,7 +767,7 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
 import { getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, collection, addDoc,
          query, where, orderBy, limit, onSnapshot, serverTimestamp, getDocs,
          writeBatch, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, getBytes } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCe6Q8aExpgyabRv29v9_j8Pho2eGQyl4Q",
@@ -949,7 +951,7 @@ let conversations = [], convListener = null;
 let currentConvId = null, currentConv = null;
 let currentPeerKeys = {}, currentPeerUids = [];
 let msgListener = null, typingListener = null, convDocListener = null;
-let typingDocs = new Map(), lastTypingWrite = 0, lastTypingDocWrite = 0;
+let typingDocs = new Map(), lastTypingWrite = 0, lastTypingDocWrite = 0, typingRefreshInterval = null;
 let lastReadWrite = 0, presenceInterval = null, presenceListenerAdded = false;
 let sending = false, replyTarget = null, editTarget = null, actionTarget = null;
 let msgCache = new Map(), searchQuery = "";
@@ -1036,6 +1038,7 @@ function subscribeUser(uid) {
         paintAvatar($("drawerAvatar"), uid, me.email, false);
       }
       renderConversations();
+      if (currentConv && currentConv.type === "dm" && currentConv.members.includes(uid)) updateConversationSubtitle(currentConv);
     }
   });
   userListeners.set(uid, unsub);
@@ -1080,8 +1083,10 @@ $("btnUnlock").onclick = async () => {
 onAuthStateChanged(auth, async user => {
   if (!user) {
     me = null; myKey = null; currentConv = null; currentConvId = null;
-    [convListener, msgListener, convDocListener].forEach(fn => { if (fn) fn(); });
-    convListener = msgListener = convDocListener = null;
+    [convListener, msgListener, convDocListener, typingListener].forEach(fn => { if (fn) fn(); });
+    convListener = msgListener = convDocListener = typingListener = null;
+    if (typingRefreshInterval) clearInterval(typingRefreshInterval);
+    typingRefreshInterval = null; typingDocs.clear();
     if (presenceInterval) { clearInterval(presenceInterval); presenceInterval = null; }
     closeDrawer(); show("s-auth"); hideSplash(); return;
   }
@@ -1275,6 +1280,8 @@ async function openConversation(convId) {
   openingConversation = true;
   currentConvId = convId; currentConv = conv;
   replyTarget = null; editTarget = null; lastReadWrite = 0;
+  if (typingRefreshInterval) clearInterval(typingRefreshInterval);
+  typingRefreshInterval = null;
   setView("conv");
   const av = $("convAvatar");
   if (conv.type === "group") paintAvatar(av, convId, conv.name || "Group", true);
@@ -1289,14 +1296,15 @@ async function openConversation(convId) {
   $("btnMute").classList.toggle("active", conv.muted && conv.muted[me.uid]);
   currentPeerKeys = {}; currentPeerUids = [];
   try {
-    for (const uid of conv.members) {
+    const keyParticipants = [...new Set(conv.keyParticipants || conv.members || [])];
+    for (const uid of keyParticipants) {
       if (uid === me.uid) continue;
       const s = await getDoc(doc(db, "users", uid));
       if (!s.exists()) continue;
       const u = s.data();
       if (!u.pubKey) continue;
       currentPeerKeys[uid] = await sharedKey(myKey, u.pubKey, me.uid, uid);
-      currentPeerUids.push(uid);
+      if ((conv.members || []).includes(uid)) currentPeerUids.push(uid);
     }
   } catch (e) { toast("Key error: " + e.message, true); }
   const hasKeys = currentPeerUids.length > 0;
@@ -1306,14 +1314,33 @@ async function openConversation(convId) {
   $("msgInput").value = getDraft(convId);
   $("msgInput").placeholder = "Message";
   if (isFinePointer() && hasKeys) $("msgInput").focus();
-  $("convSub").textContent = conv.type === "group"
-    ? `${conv.members.length} members · end-to-end encrypted`
-    : "End-to-end encrypted";
+  updateConversationSubtitle(conv);
+  
   listenMessages(conv);
   listenTyping(conv);
   listenConvDoc(conv.id);
+  typingRefreshInterval = setInterval(renderTyping, 2000);
   updateLastRead();
   openingConversation = false;
+}
+
+function formatLastSeen(lastSeen) {
+  const d = lastSeen?.toDate?.();
+  if (!d) return "last seen unavailable";
+  const ms = Date.now() - d.getTime();
+  if (ms < 120000) return "online";
+  if (ms < 3600000) return `last seen ${Math.max(1, Math.floor(ms / 60000))} min ago`;
+  if (ms < 86400000) return `last seen ${Math.floor(ms / 3600000)} hr ago`;
+  return `last seen ${d.toLocaleDateString()}`;
+}
+function updateConversationSubtitle(conv = currentConv) {
+  if (!conv) return;
+  const sub = $("convSub");
+  if (conv.type === "group") { sub.textContent = `${conv.members.length} members · end-to-end encrypted`; sub.classList.remove("online"); return; }
+  const peer = conv.members.find(u => u !== me.uid);
+  const status = formatLastSeen(usersLive.get(peer)?.lastSeen);
+  sub.textContent = `${status} · end-to-end encrypted`;
+  sub.classList.toggle("online", status === "online");
 }
 
 function listenConvDoc(convId) {
@@ -1333,6 +1360,7 @@ function listenMessages(conv) {
   const q = query(collection(db, "conversations", conv.id, "messages"),
                   orderBy("createdAt", "asc"), limit(300));
   msgListener = onSnapshot(q, async snap => {
+    if (currentConvId !== conv.id) return;
     const box = $("messages");
     const existingIds = new Set([...box.querySelectorAll(".msg")].map(el => el.dataset.msgId).filter(Boolean));
     box.innerHTML = "";
@@ -1358,7 +1386,7 @@ function listenMessages(conv) {
       if (m.deletedForEveryone) { msgCache.set(d.id, { from: m.from, text: "[deleted]", deleted: true, _ver: ver }); continue; }
       const myCt = m.encFor?.[me.uid] || { iv: m.iv, ct: m.ct };
       let key = currentPeerKeys[m.from];
-      if (!key && m.from === me.uid) key = currentPeerKeys[currentPeerUids[0]];
+      if (!key && m.from === me.uid) key = currentPeerKeys[m.selfKeyUid || currentPeerUids[0]];
       if (!key) { msgCache.set(d.id, { from: m.from, text: "[no key]", failed: true, _ver: ver }); continue; }
       try {
         const text = await decText(key, myCt.iv, myCt.ct);
@@ -1497,6 +1525,10 @@ function listenTyping(conv) {
 }
 function renderTyping() {
   const bar = $("typingBar");
+  const now = Date.now();
+  for (const [id, t] of typingDocs) {
+    if (!t.at?.toMillis || now - t.at.toMillis() >= 6000) typingDocs.delete(id);
+  }
   if (typingDocs.size === 0) { bar.innerHTML = ""; return; }
   const names = [...typingDocs.values()].map(t => userDisplayName(usersLive.get(t.uid), "Someone"));
   bar.textContent = (names.length === 1 ? `${names[0]} is typing` : `${names.length} people are typing`) + " ";
@@ -1527,8 +1559,14 @@ $("msgInput").addEventListener("keydown", e => { if (e.key === "Enter") send(); 
 async function send() {
   const originalText = $("msgInput").value.trim();
   if (!originalText || !currentConvId || sending) return;
-  if (currentConv?.type === "dm") {
-    const peer = currentConv.members.find(u => u !== me.uid);
+  const convId = currentConvId;
+  const conv = currentConv;
+  const peerUids = [...currentPeerUids];
+  const peerKeys = { ...currentPeerKeys };
+  const editingMsgId = editTarget;
+  const replyMsgId = replyTarget?.msgId || null;
+  if (conv?.type === "dm") {
+    const peer = conv.members.find(u => u !== me.uid);
     if ((usersLive.get(me.uid)?.blockedUsers || []).includes(peer) ||
         (usersLive.get(peer)?.blockedUsers || []).includes(me.uid)) {
       return toast("Messaging is unavailable because a user is blocked.", true);
@@ -1537,49 +1575,68 @@ async function send() {
   sending = true;
   $("btnSend").disabled = true;
   $("btnSend").classList.add("sending");
-  setDraft(currentConvId, "");
+  setDraft(convId, "");
+  let messageSaved = false;
   try {
     const encs = {};
-    for (const uid of currentPeerUids) {
-      if (!currentPeerKeys[uid]) continue;
-      encs[uid] = await encText(currentPeerKeys[uid], originalText);
+    for (const uid of peerUids) {
+      if (!peerKeys[uid]) continue;
+      encs[uid] = await encText(peerKeys[uid], originalText);
     }
-    const firstPeer = currentPeerUids[0];
-    if (!firstPeer) throw new Error("No encryption key");
-    encs[me.uid] = await encText(currentPeerKeys[firstPeer], originalText);
+    const firstPeer = peerUids[0];
+    if (!firstPeer || !peerKeys[firstPeer]) throw new Error("No encryption key");
+    encs[me.uid] = await encText(peerKeys[firstPeer], originalText);
     const first = encs[firstPeer];
-    if (editTarget) {
-      await updateDoc(doc(db, "conversations", currentConvId, "messages", editTarget),
-        { iv: first.iv, ct: first.ct, encFor: encs, editedAt: serverTimestamp() });
-      editTarget = null;
-      $("msgInput").placeholder = "Message";
+    if (editingMsgId) {
+      await updateDoc(doc(db, "conversations", convId, "messages", editingMsgId),
+        { iv: first.iv, ct: first.ct, encFor: encs, selfKeyUid: firstPeer, editedAt: serverTimestamp() });
     } else {
-      await addDoc(collection(db, "conversations", currentConvId, "messages"), {
+      await addDoc(collection(db, "conversations", convId, "messages"), {
         from: me.uid,
-        to: currentConv.type === "dm" ? currentConv.members.find(u => u !== me.uid) : null,
-        type: "text", iv: first.iv, ct: first.ct, encFor: encs,
-        replyTo: replyTarget?.msgId || null,
+        to: conv.type === "dm" ? conv.members.find(u => u !== me.uid) : null,
+        type: "text", iv: first.iv, ct: first.ct, encFor: encs, selfKeyUid: firstPeer,
+        replyTo: replyMsgId,
         reactions: {}, editedAt: null, deletedFor: [], deletedForEveryone: false,
         createdAt: serverTimestamp()
       });
-      await updateDoc(doc(db, "conversations", currentConvId), {
+      messageSaved = true;
+      await updateDoc(doc(db, "conversations", convId), {
         lastMessageAt: serverTimestamp(), lastMessageFrom: me.uid, lastMessageType: "text",
         clearedAt: null, clearedBy: null, clearedByName: null,
         [`lastReadAt.${me.uid}`]: serverTimestamp()
       });
     }
-    if ($("msgInput").value.trim() === originalText) $("msgInput").value = "";
-    deleteDoc(doc(db, "conversations", currentConvId, "typing", me.uid)).catch(()=>{});
-    replyTarget = null;
-    $("replyBar").classList.remove("active");
+    setDraft(convId, "");
+    if (currentConvId === convId) {
+      if ($("msgInput").value.trim() === originalText) $("msgInput").value = "";
+      if (editingMsgId) { editTarget = null; $("msgInput").placeholder = "Message"; }
+      replyTarget = null;
+      $("replyBar").classList.remove("active");
+      deleteDoc(doc(db, "conversations", convId, "typing", me.uid)).catch(()=>{});
+    }
   } catch (e) {
+    if (messageSaved) {
+      // The message write succeeded; don't restore the draft or invite a duplicate resend.
+      setDraft(convId, "");
+      if (currentConvId === convId) {
+        if ($("msgInput").value.trim() === originalText) $("msgInput").value = "";
+        replyTarget = null; editTarget = null;
+        $("replyBar").classList.remove("active");
+        deleteDoc(doc(db, "conversations", convId, "typing", me.uid)).catch(()=>{});
+      }
+      toast("Message sent, but the chat preview could not refresh.", true);
+      return;
+    }
     toast("Send failed: " + e.message, true);
-    if (!$("msgInput").value.trim()) { $("msgInput").value = originalText; setDraft(currentConvId, originalText); }
+    const currentText = currentConvId === convId ? $("msgInput").value : "";
+    const restoreText = currentText.trim() && currentText.trim() !== originalText ? currentText : originalText;
+    setDraft(convId, restoreText);
+    if (currentConvId === convId && !$("msgInput").value.trim()) $("msgInput").value = originalText;
   } finally {
     sending = false;
-    $("btnSend").disabled = false;
+    $("btnSend").disabled = !currentConvId || currentPeerUids.length === 0;
     $("btnSend").classList.remove("sending");
-    if (isFinePointer()) $("msgInput").focus();
+    if (currentConvId && isFinePointer()) $("msgInput").focus();
   }
 }
 
@@ -1768,9 +1825,10 @@ $("btnConfirmDelete").onclick = async () => {
 $("btnNewChat").onclick = async () => {
   $("modal-new").classList.add("active");
   const box = $("pickUsers"); box.innerHTML = "";
-  const snap = await getDocs(collection(db, "users"));
-  const arr = [];
-  snap.forEach(d => { if (d.id !== me.uid) arr.push({ id: d.id, ...d.data() }); });
+  try {
+    const snap = await getDocs(collection(db, "users"));
+    const arr = [];
+    snap.forEach(d => { if (d.id !== me.uid) arr.push({ id: d.id, ...d.data() }); });
   if (arr.length === 0) {
     box.innerHTML = `<div class="empty" style="padding:24px 0"><p>No one else has signed up yet.</p></div>`;
     return;
@@ -1785,7 +1843,11 @@ $("btnNewChat").onclick = async () => {
     b.append(av, n);
     b.onclick = () => startDm(u.id);
     box.appendChild(b);
-  });
+    });
+  } catch (e) {
+    box.innerHTML = `<div class="empty" style="padding:24px 0"><p>Couldn't load users. Check your connection and try again.</p></div>`;
+    toast("Couldn't load users: " + e.message, true);
+  }
 };
 async function startDm(peerUid) {
   $("modal-new").classList.remove("active");
@@ -1802,16 +1864,21 @@ async function startDm(peerUid) {
     if (!peerDoc.exists() || !peerDoc.data().pubKey) {
       return toast("This user hasn't finished setup. Ask them to reopen the app.", true);
     }
-  } catch {}
+  } catch (e) {
+    toast("Couldn't verify this user. Check your connection and try again.", true);
+    return;
+  }
   const id = dmId(me.uid, peerUid);
   const existing = conversations.find(c => c.id === id);
   if (existing) return openConversation(id);
   try {
     await setDoc(doc(db, "conversations", id), {
-      type: "dm", members: [me.uid, peerUid].sort(),
+      type: "dm", members: [me.uid, peerUid].sort(), keyParticipants: [me.uid, peerUid].sort(),
       createdAt: serverTimestamp(), createdBy: me.uid
     });
-    setTimeout(() => openConversation(id), 500);
+    const createdConv = { id, type: "dm", members: [me.uid, peerUid].sort(), keyParticipants: [me.uid, peerUid].sort(), createdBy: me.uid };
+  conversations = [...conversations.filter(c => c.id !== id), createdConv];
+  openConversation(id);
   } catch (e) { toast("Failed: " + e.message, true); }
 }
 $("btnNewGroup").onclick = () => {
@@ -1821,6 +1888,7 @@ $("btnNewGroup").onclick = () => {
   $("groupErr").textContent = "";
   const box = $("groupMembers"); box.innerHTML = "";
   const selected = new Set();
+  window._groupSelected = selected;
   getDocs(collection(db, "users")).then(snap => {
     snap.forEach(d => {
       if (d.id === me.uid) return;
@@ -1842,6 +1910,9 @@ $("btnNewGroup").onclick = () => {
       box.appendChild(b);
     });
     window._groupSelected = selected;
+  }).catch(e => {
+    $("groupErr").textContent = "Couldn't load members. Check your connection and try again.";
+    toast("Couldn't load group members: " + e.message, true);
   });
 };
 $("btnCreateGroup").onclick = async () => {
@@ -1852,11 +1923,13 @@ $("btnCreateGroup").onclick = async () => {
   if (selected.size < 1) return $("groupErr").textContent = "Pick at least one member.";
   try {
     const ref = await addDoc(collection(db, "conversations"), {
-      type: "group", name, members: [me.uid, ...selected],
+      type: "group", name, members: [me.uid, ...selected], keyParticipants: [me.uid, ...selected],
       createdAt: serverTimestamp(), createdBy: me.uid
     });
     $("modal-group").classList.remove("active");
-    setTimeout(() => openConversation(ref.id), 500);
+    const createdConv = { id: ref.id, type: "group", name, members: [me.uid, ...selected], keyParticipants: [me.uid, ...selected], createdBy: me.uid };
+    conversations = [...conversations.filter(c => c.id !== ref.id), createdConv];
+    openConversation(ref.id);
   } catch (e) { $("groupErr").textContent = e.message; }
 };
 
@@ -1888,22 +1961,33 @@ $("btnSaveProfile").onclick = async () => {
   if (file && !file.type.startsWith("image/")) return $("profileErr").textContent = "Choose an image file.";
   if (file && file.size > 5 * 1024 * 1024) return $("profileErr").textContent = "Photo must be 5 MB or smaller.";
   const btn = $("btnSaveProfile"); btn.disabled = true; btn.textContent = "Saving...";
+  // A timeout prevents the Save button/modal from remaining stuck forever
+  // if Firebase is unreachable or a request never settles.
+  const withTimeout = (promise, label) => Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error(`${label} timed out. Check your internet connection and Firebase settings, then try again.`)), 20000))
+  ]);
   try {
+    if (!me?.uid) throw new Error("You are not signed in. Please sign in again.");
     let photoURL = usersLive.get(me.uid)?.photoURL || "";
     if (file) {
       const path = storageRef(storage, `profilePhotos/${me.uid}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`);
-      await uploadBytes(path, file, { contentType: file.type });
-      photoURL = await getDownloadURL(path);
+      await withTimeout(uploadBytes(path, file, { contentType: file.type }), "Photo upload");
+      photoURL = await withTimeout(getDownloadURL(path), "Photo URL request");
     }
-    await updateDoc(doc(db, "users", me.uid), { displayName: name, photoURL });
+    await withTimeout(updateDoc(doc(db, "users", me.uid), { displayName: name, photoURL }), "Profile save");
     const old = usersLive.get(me.uid) || {};
     usersLive.set(me.uid, { ...old, uid: me.uid, displayName: name, photoURL });
     $("drawerEmail").textContent = name; $("myEmail").textContent = name;
     paintAvatar($("drawerAvatar"), me.uid, me.email, false);
     $("modal-profile").classList.remove("active");
     renderConversations(); toast("Profile updated");
-  } catch (e) { $("profileErr").textContent = e.message || "Couldn't update profile."; }
-  finally { btn.disabled = false; btn.textContent = "Save profile"; }
+  } catch (e) {
+    $("profileErr").textContent = e?.message || "Couldn't update profile. Please try again.";
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Save profile";
+  }
 };
 
 /* BLOCK / UNBLOCK */
@@ -1949,7 +2033,10 @@ $("menuGroupControls").onclick = async () => {
         row.append(av, label);
         row.onclick = async () => {
           try {
-            await updateDoc(doc(db, "conversations", currentConvId), { members: arrayUnion(d.id) });
+            await updateDoc(doc(db, "conversations", currentConvId), {
+              members: arrayUnion(d.id),
+              keyParticipants: arrayUnion(...(currentConv.keyParticipants || currentConv.members || []), d.id)
+            });
             currentConv.members = [...new Set([...(currentConv.members || []), d.id])];
             currentPeerUids.push(d.id);
             if (u.pubKey && myKey) currentPeerKeys[d.id] = await sharedKey(myKey, u.pubKey, me.uid, d.id);
@@ -1974,7 +2061,8 @@ $("menuGroupControls").onclick = async () => {
         try {
           await updateDoc(doc(db, "conversations", currentConvId), { members: arrayRemove(uid) });
           currentConv.members = currentConv.members.filter(x => x !== uid);
-          currentPeerUids = currentPeerUids.filter(x => x !== uid); delete currentPeerKeys[uid];
+          currentPeerUids = currentPeerUids.filter(x => x !== uid);
+          // Keep the cached pairwise key for decrypting this member's older messages.
           toast("Member removed"); openGroupControlsRefresh();
         } catch (err) { toast("Couldn't remove member: " + err.message, true); }
       };
@@ -2064,11 +2152,12 @@ $("btnChangePassword").onclick = async () => {
     await updatePassword(user, nw);
     try {
       await updateDoc(doc(db, "users", me.uid), {
-        encPrivKey: b64(newWrapped), privIv: b64(newIv), kdfSalt: b64(newSalt)
+        encPrivKey: b64(newWrapped), privIv: b64(newIv), kdfSalt: b64(newSalt), kdfIter: 600000
       });
     } catch {
       try {
-        const rollback = EmailAuthProvider.credential(me.email, cur);
+        // Firebase Auth already has the new password at this point, so reauthenticate with it before rolling back.
+        const rollback = EmailAuthProvider.credential(me.email, nw);
         await reauthenticateWithCredential(user, rollback);
         await updatePassword(user, cur);
       } catch {}
@@ -2090,6 +2179,9 @@ $("btnChangePassword").onclick = async () => {
 $("btnBack").onclick = () => {
   [msgListener, typingListener, convDocListener].forEach(fn => { if (fn) fn(); });
   msgListener = typingListener = convDocListener = null;
+  if (typingRefreshInterval) clearInterval(typingRefreshInterval);
+  typingRefreshInterval = null;
+  typingDocs.clear(); $("typingBar").innerHTML = "";
   currentConvId = null; currentConv = null;
   replyTarget = null; editTarget = null;
   $("replyBar").classList.remove("active");
