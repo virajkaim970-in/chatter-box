@@ -1325,10 +1325,21 @@ function subscribeConversations() {
     });
     renderConversations();
   }, err => {
-    console.error("Conversation list listener failed:", err);
-    toast(err?.code === "permission-denied"
-      ? "Firebase denied access to your chats. Check the conversation read rules."
-      : "Couldn't load chats. Check your connection and try again.", true);
+    // Keep the underlying Firebase code visible in DevTools so rule/configuration
+    // failures can be distinguished from offline/network failures.
+    console.error("Conversation list listener failed", {
+      code: err?.code || "unknown",
+      message: err?.message || String(err),
+      projectId: firebaseConfig.projectId,
+      uid: me?.uid || null
+    }, err);
+    const code = err?.code || "unknown";
+    const message = code === "permission-denied"
+      ? `Firebase denied the conversations query (${code}). Publish the matching Firestore Rules to project ${firebaseConfig.projectId}.`
+      : `Couldn't load chats (${code}). Check your connection and Firebase project configuration.`;
+    const list = $("convList");
+    if (list) list.innerHTML = `<div class="empty"><h3>Chats couldn't load</h3><p>${escapeHtml(message)}</p></div>`;
+    toast(message, true);
   });
 }
 function renderConversations() {
