@@ -839,6 +839,10 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{
       </div>
       <button class="menu-item" id="btnExportBackup" style="margin-top:12px;background:var(--s2)">Export local backup<span class="menu-sub">Save your starred messages and drafts from this device</span></button>
       <button class="menu-item" id="btnAppStats" style="margin-top:8px;background:var(--s2)">App statistics<span class="menu-sub">View your chat and message counts</span></button>
+      <button class="menu-item" id="btnManageBlocked" style="margin-top:8px;background:var(--s2)">Blocked users<span class="menu-sub">View blocked accounts and unblock them</span></button>
+      <div id="blockedUsersPanel" style="display:none;margin-top:10px;padding:10px;background:var(--s2);border:1px solid var(--bd2);border-radius:12px">
+        <div id="blockedUsersList"><p class="sheet-sub">Loading blocked users…</p></div>
+      </div>
       <button class="menu-item" id="btnOpenPassword" style="margin-top:12px;background:var(--s2)">
         <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
         <div>Change password<span class="menu-sub">Re-encrypts your vault key</span></div></button>
@@ -1200,6 +1204,7 @@ function subscribeUser(uid) {
         paintAvatar($("drawerAvatar"), uid, me.email, false);
       }
       renderConversations();
+      if (uid === me?.uid && $("blockedUsersPanel")?.style.display !== "none") renderBlockedUsersSettings();
       if (currentConv && currentConv.type === "dm" && currentConv.members.includes(uid)) updateConversationSubtitle(currentConv);
     }
   });
@@ -1335,7 +1340,7 @@ function subscribeConversations() {
     }, err);
     const code = err?.code || "unknown";
     const message = code === "permission-denied"
-      ? `Firebase denied the conversations query (${code}). Publish the matching Firestore Rules to project ${firebaseConfig.projectId}.`
+      ? `Firestore denied the conversations query (${code}) in project ${firebaseConfig.projectId}. Check Firestore Database → Rules for the (default) database, confirm they are Published, and verify the signed-in account is a member in each conversation's members array.`
       : `Couldn't load chats (${code}). Check your connection and Firebase project configuration.`;
     const list = $("convList");
     if (list) list.innerHTML = `<div class="empty"><h3>Chats couldn't load</h3><p>${escapeHtml(message)}</p></div>`;
@@ -2592,6 +2597,53 @@ $("toggleTheme").onclick = () => {
   document.body.setAttribute("data-theme", next);
   localStorage.setItem("theme", next);
   $("toggleTheme").classList.toggle("on", next === "dark");
+};
+
+/* BLOCKED USERS SETTINGS */
+function renderBlockedUsersSettings() {
+  const box = $("blockedUsersList");
+  if (!box || !me) return;
+  const ids = [...new Set(usersLive.get(me.uid)?.blockedUsers || [])];
+  box.innerHTML = "";
+  if (!ids.length) {
+    box.innerHTML = `<p class="sheet-sub" style="margin:4px 0">You haven't blocked anyone.</p>`;
+    return;
+  }
+  ids.forEach(uid => {
+    const profile = usersLive.get(uid) || {};
+    const row = document.createElement("div");
+    row.style.cssText = "display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--bd2)";
+    const label = document.createElement("div");
+    label.style.cssText = "min-width:0;overflow-wrap:anywhere;font-size:13px;color:var(--tx)";
+    label.textContent = profile.displayName || profile.email || uid;
+    const btn = document.createElement("button");
+    btn.type = "button"; btn.className = "btn btn-primary";
+    btn.style.cssText = "padding:8px 12px;min-width:88px;flex:0 0 auto";
+    btn.textContent = "Unblock";
+    btn.onclick = async () => {
+      btn.disabled = true; btn.textContent = "…";
+      try {
+        await updateDoc(doc(db, "users", me.uid), { blockedUsers: arrayRemove(uid) });
+        const mine = usersLive.get(me.uid) || {};
+        usersLive.set(me.uid, { ...mine, blockedUsers: (mine.blockedUsers || []).filter(x => x !== uid) });
+        renderBlockedUsersSettings(); renderConversations();
+        toast("User unblocked");
+      } catch (e) {
+        btn.disabled = false; btn.textContent = "Unblock";
+        toast("Couldn't unblock user: " + (e?.message || e), true);
+      }
+    };
+    row.append(label, btn); box.appendChild(row);
+  });
+}
+$("btnManageBlocked").onclick = () => {
+  const panel = $("blockedUsersPanel");
+  const opening = panel.style.display === "none";
+  panel.style.display = opening ? "block" : "none";
+  if (opening) {
+    (usersLive.get(me.uid)?.blockedUsers || []).forEach(uid => subscribeUser(uid));
+    renderBlockedUsersSettings();
+  }
 };
 
 /* LOCAL BACKUP + BASIC STATISTICS */
